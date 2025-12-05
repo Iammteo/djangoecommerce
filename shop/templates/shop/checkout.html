@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-soft">
+                <div class="card-body p-5">
+                    <h3 class="fw-bold mb-4">Checkout</h3>
+                    
+                    <!-- Product Details -->
+                    <div class="card mb-4 bg-light border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="fw-semibold mb-1">{{ product.name }}</h5>
+                                    <p class="text-muted mb-0 small">{{ product.description|truncatewords:15 }}</p>
+                                </div>
+                                <div class="text-end">
+                                    <h4 class="fw-bold text-primary mb-0">${{ product.price }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Summary -->
+                    <div class="mb-4">
+                        <h5 class="fw-semibold mb-3">Order Summary</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span>${{ product.price }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax:</span>
+                            <span>$0.00</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Total:</span>
+                            <span class="text-primary">${{ product.price }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Button -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-semibold">
+                            <i class="fas fa-lock me-2"></i>
+                            Proceed to Payment
+                        </button>
+                    </form>
+
+                    <p class="text-center text-muted mt-3 mb-0 small">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Secure payment powered by Stripe
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

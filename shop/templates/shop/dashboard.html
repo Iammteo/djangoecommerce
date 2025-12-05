@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - TerraScope{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold mb-1">Welcome back, {{ user.username }}! 👋</h2>
+                    <p class="text-muted mb-0">Here's what's happening with your account today.</p>
+                </div>
+                <div>
+                    <span class="badge bg-success px-3 py-2">
+                        <i class="fas fa-circle me-1" style="font-size: 8px;"></i>
+                        Active Account
+                    </span>
+                </div>`
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Total Orders -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-soft h-100 border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Total Orders</p>
+                            <h3 class="fw-bold mb-0">0</h3>
+                            <small class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>0% from last month
+                            </small>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-3">
+                            <i class="fas fa-shopping-bag text-primary fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Subscriptions -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-soft h-100 border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Subscriptions</p>
+                            <h3 class="fw-bold mb-0">0</h3>
+                            <small class="text-muted">
+                                <i class="fas fa-minus me-1"></i>No change
+                            </small>
+                        </div>
+                        <div class="bg-success bg-opacity-10 p-3 rounded-3">
+                            <i class="fas fa-sync text-success fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Security -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-soft h-100 border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Security Score</p>
+                            <h3 class="fw-bold mb-0">
+                                {% if user.is_2fa_enabled %}95%{% else %}65%{% endif %}
+                            </h3>
+                            <small class="{% if user.is_2fa_enabled %}text-success{% else %}text-warning{% endif %}">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                {% if user.is_2fa_enabled %}Excellent{% else %}Good{% endif %}
+                            </small>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 p-3 rounded-3">
+                            <i class="fas fa-lock text-warning fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Member Since -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-soft h-100 border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1 small">Member Since</p>
+                            <h3 class="fw-bold mb-0">{{ user.date_joined|date:"M Y" }}</h3>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>{{ user.date_joined|timesince }} ago
+                            </small>
+                        </div>
+                        <div class="bg-info bg-opacity-10 p-3 rounded-3">
+                            <i class="fas fa-user-check text-info fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row g-4">
+        <!-- Quick Actions -->
+        <div class="col-lg-8">
+            <div class="card card-soft border-0 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">Quick Actions</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <a href="{% url 'products' %}" class="text-decoration-none">
+                                <div class="d-flex align-items-center p-3 rounded-3 bg-light hover-shadow" style="transition: all 0.3s;">
+                                    <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                                        <i class="fas fa-shopping-cart text-primary fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-semibold text-dark">Browse Products</h6>
+                                        <small class="text-muted">Explore our catalog</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'orders' %}" class="text-decoration-none">
+                                <div class="d-flex align-items-center p-3 rounded-3 bg-light hover-shadow" style="transition: all 0.3s;">
+                                    <div class="bg-success bg-opacity-10 p-3 rounded-3 me-3">
+                                        <i class="fas fa-box text-success fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-semibold text-dark">View Orders</h6>
+                                        <small class="text-muted">Track your purchases</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'subscriptions' %}" class="text-decoration-none">
+                                <div class="d-flex align-items-center p-3 rounded-3 bg-light hover-shadow" style="transition: all 0.3s;">
+                                    <div class="bg-warning bg-opacity-10 p-3 rounded-3 me-3">
+                                        <i class="fas fa-sync-alt text-warning fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-semibold text-dark">Subscriptions</h6>
+                                        <small class="text-muted">Manage recurring services</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'profile' %}" class="text-decoration-none">
+                                <div class="d-flex align-items-center p-3 rounded-3 bg-light hover-shadow" style="transition: all 0.3s;">
+                                    <div class="bg-info bg-opacity-10 p-3 rounded-3 me-3">
+                                        <i class="fas fa-user-cog text-info fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-semibold text-dark">Account Settings</h6>
+                                        <small class="text-muted">Update your profile</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card card-soft border-0">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">Recent Activity</h5>
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox text-muted mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+                        <p class="text-muted">No recent activity yet</p>
+                        <a href="{% url 'products' %}" class="btn btn-primary btn-sm">
+                            Start Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Info Sidebar -->
+        <div class="col-lg-4">
+            <!-- Account Status -->
+            <div class="card card-soft border-0 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">Account Status</h5>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">Email Verification</span>
+                            {% if user.is_email_verified %}
+                                <span class="badge bg-success">Verified</span>
+                            {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted small">Two-Factor Auth</span>
+                            {% if user.is_2fa_enabled %}
+                                <span class="badge bg-success">Enabled</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Disabled</span>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Account Type</span>
+                            <span class="badge bg-primary">Standard</span>
+                        </div>
+                    </div>
+
+                    {% if not user.is_2fa_enabled %}
+                    <div class="alert alert-warning border-0 mt-3" role="alert">
+                        <div class="d-flex">
+                            <i class="fas fa-exclamation-triangle me-2 mt-1"></i>
+                            <div>
+                                <h6 class="alert-heading fw-semibold mb-1">Secure Your Account</h6>
+                                <p class="mb-2 small">Enable 2FA for extra security</p>
+                                <a href="{% url 'setup_2fa' %}" class="btn btn-warning btn-sm">
+                                    Enable Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Profile Card -->
+            <div class="card card-soft border-0">
+                <div class="card-body p-4 text-center">
+                    <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 32px;">
+                        {{ user.username|first|upper }}
+                    </div>
+                    <h5 class="fw-bold mb-1">{{ user.username }}</h5>
+                    <p class="text-muted small mb-3">{{ user.email }}</p>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'profile' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-user-edit me-2"></i>Edit Profile
+                        </a>
+                        <form method="post" action="{% url 'logout' %}" class="mb-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-shadow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .user-avatar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+</style>
+{% endblock %}

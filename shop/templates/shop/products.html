@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Products - TerraScope{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-3">Our Products</h1>
+        <p class="text-muted">Explore our collection of premium geospatial intelligence products</p>
+    </div>
+
+    <!-- Products Grid -->
+    {% if products %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for product in products %}
+        <div class="col">
+            <div class="card card-soft h-100 border-0">
+                <div class="card-body p-4 d-flex flex-column">
+                    <!-- Category Badge -->
+                    <div class="mb-3">
+                        <span class="badge bg-primary bg-opacity-10 text-primary">
+                            {{ product.category|default:"General" }}
+                        </span>
+                    </div>
+                    
+                    <!-- Product Name -->
+                    <h5 class="fw-bold mb-3">{{ product.name }}</h5>
+                    
+                    <!-- Description -->
+                    <p class="text-muted mb-4 flex-grow-1">
+                        {{ product.description|truncatewords:20 }}
+                    </p>
+                    
+                    <!-- Price and Action -->
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h3 class="fw-bold text-primary mb-0">${{ product.price }}</h3>
+                                <small class="text-muted">One-time payment</small>
+                            </div>
+                        </div>
+                        
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'checkout' product.id %}" class="btn btn-primary w-100 py-2">
+                                <i class="fas fa-shopping-cart me-2"></i>Buy Now
+                            </a>
+                        {% else %}
+                            <a href="{% url 'signin' %}" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign in to Purchase
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <i class="fas fa-box-open text-muted mb-4" style="font-size: 4rem; opacity: 0.3;"></i>
+        <h4 class="text-muted mb-3">No Products Available</h4>
+        <p class="text-muted">Check back soon for new products!</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .card-soft:hover {
+        transform: translateY(-5px);
+        transition: all 0.3s ease;
+    }
+</style>
+{% endblock %}

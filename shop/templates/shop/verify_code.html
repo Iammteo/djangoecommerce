@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Email - TerraScope{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card card-soft">
+                <div class="card-body p-5">
+                    <h3 class="fw-bold text-center mb-4">Verify Your Email</h3>
+                    
+                    <p class="text-muted text-center mb-4">
+                        We sent a 6-digit verification code to <strong>{{ user.email }}</strong>
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="code" class="form-label">Verification Code</label>
+                            <input type="text" 
+                                   class="form-control form-control-lg text-center" 
+                                   id="code" 
+                                   name="code" 
+                                   placeholder="000000"
+                                   maxlength="6"
+                                   pattern="\d{6}"
+                                   required
+                                   autofocus>
+                            <div class="form-text text-center">Enter the 6-digit code from your email</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            Verify Email
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="text-muted mb-2">Didn't receive the code?</p>
+                        <a href="{% url 'resend_verification_code' user.id %}" class="btn btn-outline-secondary btn-sm">
+                            Resend Code
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

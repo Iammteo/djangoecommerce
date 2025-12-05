@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders - TerraScope{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold mb-1">My Orders</h2>
+            <p class="text-muted">View and track all your purchases</p>
+        </div>
+    </div>
+
+
+     <!-- Order Stats -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-4">
+            <div class="card card-soft border-0">
+                <div class="card-body text-center p-4">
+                    <h3 class="fw-bold text-primary mb-1">{{ orders|length }}</h3>
+                    <p class="text-muted mb-0 small">Total Orders</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-soft border-0">
+                <div class="card-body text-center p-4">
+                    <h3 class="fw-bold text-success mb-1">{{ paid_orders_count }}</h3>
+                    <p class="text-muted mb-0 small">Completed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-soft border-0">
+                <div class="card-body text-center p-4">
+                    <h3 class="fw-bold text-primary mb-1">${{ total_spent }}</h3>
+                    <p class="text-muted mb-0 small">Total Spent</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if orders %}
+    <!-- Orders List -->
+    <div class="row">
+        <div class="col-12">
+            {% for order in orders %}
+            <div class="card card-soft border-0 mb-3">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <!-- Order Info -->
+                        <div class="col-lg-8">
+                            <div class="d-flex align-items-start">
+                                <!-- Product Icon -->
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                                    <i class="fas fa-box text-primary fs-4"></i>
+                                </div>
+                                
+                                <!-- Details -->
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h5 class="fw-bold mb-0 me-3">{{ order.product.name }}</h5>
+                                        {% if order.status == 'paid' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>Paid
+                                            </span>
+                                        {% elif order.status == 'pending' %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-clock me-1"></i>Pending
+                                            </span>
+                                        {% elif order.status == 'cancelled' %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times-circle me-1"></i>Cancelled
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <p class="text-muted mb-2 small">
+                                        {{ order.product.description|truncatewords:15 }}
+                                    </p>
+                                    
+                                    <div class="text-muted small">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        Ordered on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|date:"g:i A" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Price and Actions -->
+                        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                            <h4 class="fw-bold text-primary mb-3">${{ order.total_price }}</h4>
+                            <div class="d-flex flex-column gap-2">
+                                {% if order.status == 'paid' %}
+                                    <button class="btn btn-sm btn-outline-primary" disabled>
+                                        <i class="fas fa-download me-1"></i>Download Receipt
+                                    </button>
+                                {% elif order.status == 'pending' %}
+                                    <a href="{% url 'checkout' order.product.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-credit-card me-1"></i>Complete Payment
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+   
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-soft border-0">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-shopping-bag text-muted mb-4" style="font-size: 4rem; opacity: 0.3;"></i>
+                    <h4 class="fw-bold mb-3">No Orders Yet</h4>
+                    <p class="text-muted mb-4">You haven't made any purchases yet. Start exploring our products!</p>
+                    <a href="{% url 'products' %}" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart me-2"></i>Browse Products
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

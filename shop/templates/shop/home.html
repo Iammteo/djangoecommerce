@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+{% block title %}TerraScope - Climate Intelligence from Space{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section with Animated Background -->
+<div class="hero-modern position-relative overflow-hidden mb-5">
+    <!-- Animated Background -->
+    <div class="hero-bg-animated"></div>
+    
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center py-5">
+            <div class="col-lg-7 mb-5 mb-lg-0">
+                <div class="hero-content">
+                    <!-- Badge -->
+                    <div class="badge bg-white bg-opacity-25 text-white mb-3 px-3 py-2">
+                        <i class="fas fa-satellite me-2"></i>Powered by Real-Time Satellite Data
+                    </div>
+                    
+                    <!-- Main Headline -->
+                    <h1 class="display-3 fw-bold text-white mb-4" style="line-height: 1.2;">
+                        See climate change
+                        <span class="d-block" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            from space
+                        </span>
+                    </h1>
+                    
+                    <!-- Subtitle -->
+                    <p class="lead text-white mb-4 opacity-90" style="font-size: 1.25rem;">
+                        Transform low-orbit satellite imagery into actionable insights. Monitor crop health, 
+                        track wildfires, analyze urban growth, and detect deforestation—all in real-time.
+                    </p>
+                    
+                    <!-- CTA Buttons -->
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{% url 'products' %}" class="btn btn-light btn-lg px-4 py-3 shadow-lg">
+                            <i class="fas fa-rocket me-2"></i>Explore Products
+                        </a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'dashboards' %}" class="btn btn-outline-light btn-lg px-4 py-3">
+                                <i class="fas fa-chart-line me-2"></i>My Dashboard
+                            </a>
+                        {% else %}
+                            <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg px-4 py-3">
+                                <i class="fas fa-user-plus me-2"></i>Get Started Free
+                            </a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Trust Indicators -->
+                    <div class="d-flex flex-wrap gap-4 mt-4 text-white opacity-75">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <small>Real-time updates</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            <small>Enterprise security</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock me-2"></i>
+                            <small>24/7 monitoring</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Card -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-2xl" style="backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.95); border-radius: 24px;">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                                <i class="fas fa-chart-bar text-primary fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Live Analytics</h5>
+                                <small class="text-muted">Updated every 30 seconds</small>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 text-center mb-4">
+                            <div class="col-4">
+                                <div class="p-3 bg-primary bg-opacity-10 rounded-3">
+                                    <div class="fw-bold h3 mb-0 text-primary counter" data-target="{{ monitored_regions|default:'42' }}">0</div>
+                                    <small class="text-muted d-block mt-1">Regions</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 bg-danger bg-opacity-10 rounded-3">
+                                    <div class="fw-bold h3 mb-0 text-danger counter" data-target="{{ active_alerts|default:'7' }}">0</div>
+                                    <small class="text-muted d-block mt-1">Alerts</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 bg-success bg-opacity-10 rounded-3">
+                                    <div class="fw-bold h3 mb-0 text-success counter" data-target="{{ api_calls|default:'1200' }}">0</div>
+                                    <small class="text-muted d-block mt-1">API Calls</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Mini Chart Placeholder -->
+                        <div class="bg-light rounded-3 p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">Activity last 24h</small>
+                                <small class="text-success"><i class="fas fa-arrow-up me-1"></i>+23%</small>
+                            </div>
+                            <div style="height: 60px; background: linear-gradient(180deg, rgba(79, 70, 229, 0.1) 0%, rgba(79, 70, 229, 0) 100%); border-radius: 8px; position: relative;">
+                                <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #4f46e5, transparent);"></div>
+                            </div>
+                        </div>
+                        
+                        <p class="mb-0 text-muted small text-center">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Demo data • Production metrics available after signup
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container mb-5">
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="feature-card text-center p-4">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Crop Health Monitoring</h5>
+                <p class="text-muted mb-0">Track vegetation indices and predict yield with AI-powered analysis</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card text-center p-4">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Wildfire Detection</h5>
+                <p class="text-muted mb-0">Real-time alerts for fire outbreaks with spread prediction models</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card text-center p-4">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-city"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Urban Expansion</h5>
+                <p class="text-muted mb-0">Monitor city growth and infrastructure development over time</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Products Section -->
+<div class="container mb-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold mb-3">Featured Products</h2>
+        <p class="text-muted">Choose the perfect solution for your climate intelligence needs</p>
+    </div>
+
+    {% if products %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for product in products %}
+        <div class="col">
+            <div class="product-card card border-0 shadow-sm h-100">
+                <div class="card-body p-4 d-flex flex-column">
+                    <!-- Category Badge -->
+                    <div class="mb-3">
+                        <span class="badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            {{ product.category|default:"Analytics" }}
+                        </span>
+                    </div>
+                    
+                    <!-- Product Name -->
+                    <h5 class="fw-bold mb-3">{{ product.name }}</h5>
+                    
+                    <!-- Description -->
+                    <p class="text-muted mb-4 flex-grow-1">
+                        {{ product.description|truncatewords:15 }}
+                    </p>
+                    
+                    <!-- Price and CTA -->
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h4 class="fw-bold text-primary mb-0">${{ product.price }}</h4>
+                                <small class="text-muted">one-time</small>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle me-1"></i>Instant access
+                                </small>
+                            </div>
+                        </div>
+                        <a href="{% url 'products' %}" class="btn btn-primary w-100">
+                            View Details <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'products' %}" class="btn btn-outline-primary btn-lg">
+            View All Products <i class="fas fa-arrow-right ms-2"></i>
+        </a>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-box-open text-muted mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+        <p class="text-muted">Products coming soon...</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- CTA Section -->
+<div class="container mb-5">
+    <div class="cta-section text-center text-white p-5 rounded-4">
+        <h2 class="fw-bold mb-3">Ready to get started?</h2>
+        <p class="lead mb-4 opacity-90">Join thousands of organizations using TerraScope for climate intelligence</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'products' %}" class="btn btn-light btn-lg px-5">
+                <i class="fas fa-rocket me-2"></i>Explore Products
+            </a>
+        {% else %}
+            <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5">
+                <i class="fas fa-user-plus me-2"></i>Create Free Account
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    /* Hero Section Styles */
+    .hero-modern {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 24px;
+        padding: 3rem 0;
+        margin: 2rem 1rem;
+        position: relative;
+    }
+    
+    .hero-bg-animated {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        opacity: 0.1;
+        background-image: 
+            radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+        animation: pulse 8s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 0.1; }
+        50% { opacity: 0.2; }
+    }
+    
+    .shadow-2xl {
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    /* Feature Cards */
+    .feature-card {
+        background: white;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+    }
+    
+    /* Product Cards */
+    .product-card {
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Counter Animation */
+    @keyframes countUp {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+
+<script>
+    // Counter Animation
+    document.addEventListener('DOMContentLoaded', function() {
+        const counters = document.querySelectorAll('.counter');
+        
+        counters.forEach(counter => {
+            const target = parseInt(counter.getAttribute('data-target'));
+            const duration = 2000;
+            const step = target / (duration / 16);
+            let current = 0;
+            
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    counter.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    counter.textContent = Math.floor(current);
+                }
+            }, 16);
+        });
+    });
+</script>
+
+{% endblock %}

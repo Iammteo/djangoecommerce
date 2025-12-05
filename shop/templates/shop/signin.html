@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Sign in · TerraScope{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+  <div class="card shadow-lg border-0" style="max-width: 420px; width: 100%; border-radius: 18px;">
+    <div class="card-body p-4">
+      <h3 class="text-center mb-3 fw-bold">Welcome back 👋</h3>
+      <p class="text-center text-muted mb-4">Log in to continue to <strong>TerraScope</strong></p>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} py-2">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control form-control-lg" placeholder="you@example.com" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label d-flex justify-content-between">
+            <span>Password</span>
+            <a href="{% url 'password_reset' %}" class="small text-decoration-none">Forgot password?</a>
+          </label>
+          <input type="password" name="password" class="form-control form-control-lg" placeholder="••••••••" required>
+        </div>
+        <button class="btn btn-primary w-100 btn-lg mt-2" style="border-radius: 999px;">
+          Sign in
+        </button>
+      </form>
+
+      <p class="text-center text-muted mt-3 mb-0">
+        Don’t have an account?
+        <a href="{% url 'register' %}" class="text-decoration-none">Create one</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
