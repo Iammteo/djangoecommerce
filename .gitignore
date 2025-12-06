@@ -1,15 +1,23 @@
-git add ecommerce .gitignore
-
-git status
 
 .env
-#*.sqlite3
-#db.sqlite3
-*.pyc
+*.sqlite3
 *.log
 __pycache__/
+migrations/
 *.py[cod]
 venv/
 .vscode/
 staticfiles/
 .DS_Store
+.idea/
+*.iml
+*.swp
+coverage/
+htmlcov/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+celerybeat-schedule
+instance/
+.webassets-cache/
