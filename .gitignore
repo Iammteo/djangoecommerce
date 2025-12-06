@@ -3,3 +3,11 @@ git add ecommerce .gitignore
 git status
 
 .env
+*.sqlite3
+*.log
+__pycache__/
+*.py[cod]
+venv/
+.vscode/
+staticfiles/
+.DS_Store
