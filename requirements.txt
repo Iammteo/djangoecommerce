@@ -1,0 +1,8 @@
+Django>=4.2.7
+idna>=3.11
+PyJWT>=2.10.1
+pyotp>=2.8.0
+python-dotenv>=1.0.0
+qrcode>=7.4.2
+requests>=2.31.0
+stripe>=7.4.0
