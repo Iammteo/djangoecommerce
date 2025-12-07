@@ -1,517 +1,426 @@
 {% extends "base.html" %}
 
-{% block title %}My Subscriptions - TerraScope{% endblock %}
+{% block title %}Premium Products - TerraScope{% endblock %}
 
 {% block extra_css %}
 <style>
-    .subscriptions-header {
+    .products-hero {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        border-radius: 20px;
-        padding: 3rem 2rem;
-        margin-bottom: 2rem;
-    }
-    
-    .subscription-card {
-        border: none;
-        border-radius: 16px;
+        border-radius: 24px;
+        padding: 4rem 2rem;
+        margin-bottom: 3rem;
+        position: relative;
         overflow: hidden;
+    }
+    
+    .products-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+    
+    .product-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s;
-        margin-bottom: 1.5rem;
+        height: 100%;
     }
     
-    .subscription-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
+    .product-card:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.25);
     }
     
-    .subscription-status-bar {
-        height: 6px;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    }
-    
-    .subscription-status-bar.canceled {
-        background: #ef4444;
-    }
-    
-    .subscription-status-bar.past-due {
-        background: #fbbf24;
-    }
-    
-    .subscription-body {
+    .product-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 2rem;
+        text-align: center;
+        position: relative;
     }
     
-    .subscription-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
+    .product-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.75rem;
-        margin-bottom: 1rem;
-    }
-    
-    .icon-active {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        margin: 0 auto 1rem;
+        font-size: 2.5rem;
         color: white;
     }
     
-    .icon-canceled {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    .price-tag {
+        font-size: 3rem;
+        font-weight: 800;
+        color: white;
+        margin: 0;
+        line-height: 1;
+    }
+    
+    .price-period {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 1rem;
+        margin-top: 0.5rem;
+    }
+    
+    .product-body {
+        padding: 2rem;
+    }
+    
+    .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 2rem 0;
+    }
+    
+    .feature-list li {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f1f1;
+        display: flex;
+        align-items: center;
+    }
+    
+    .feature-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .feature-icon {
+        width: 24px;
+        height: 24px;
+        background: #10b981;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.75rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .btn-purchase {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        transition: all 0.3s;
+    }
+    
+    .btn-purchase:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         color: white;
     }
     
-    .icon-warning {
-        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    .category-badge {
+        background: rgba(255, 255, 255, 0.2);
         color: white;
-    }
-    
-    .status-badge-custom {
         padding: 0.5rem 1rem;
         border-radius: 20px;
         font-size: 0.85rem;
         font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
+        display: inline-block;
+        margin-bottom: 1rem;
     }
     
-    .status-active {
-        background: #d1fae5;
-        color: #065f46;
+    .popular-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: #fbbf24;
+        color: #1f2937;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
     }
     
-    .status-canceled {
-        background: #fee2e2;
-        color: #991b1b;
-    }
-    
-    .status-past-due {
-        background: #fef3c7;
-        color: #92400e;
-    }
-    
-    .subscription-details {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        padding: 1.5rem;
-        background: #f9fafb;
-        border-radius: 12px;
-        margin-top: 1rem;
-    }
-    
-    .detail-item {
+    .filter-pills {
         display: flex;
-        align-items: center;
         gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
     }
     
-    .detail-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
+    .filter-pill {
+        padding: 0.5rem 1.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 25px;
         background: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #667eea;
-    }
-    
-    .stat-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        text-align: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        color: #6b7280;
+        font-weight: 600;
+        cursor: pointer;
         transition: all 0.3s;
     }
     
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    .filter-pill:hover, .filter-pill.active {
+        border-color: #667eea;
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
     }
     
-    .stat-value {
-        font-size: 2.5rem;
+    .stats-bar {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
         font-weight: 800;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: #667eea;
+        display: block;
     }
     
     .stat-label {
         color: #6b7280;
         font-size: 0.9rem;
-        margin-top: 0.5rem;
-    }
-    
-    .action-buttons {
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-    }
-    
-    .btn-manage {
-        border-radius: 10px;
-        padding: 0.5rem 1.25rem;
-        font-weight: 600;
-        transition: all 0.3s;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-    }
-    
-    .empty-icon {
-        font-size: 5rem;
-        color: #e5e7eb;
-        margin-bottom: 2rem;
-    }
-    
-    .info-card {
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .info-card-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-    }
-    
-    .timeline {
-        position: relative;
-        padding-left: 2rem;
-    }
-    
-    .timeline::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #e5e7eb;
-    }
-    
-    .timeline-item {
-        position: relative;
-        padding-bottom: 1.5rem;
-    }
-    
-    .timeline-dot {
-        position: absolute;
-        left: -2.375rem;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: #667eea;
-        border: 3px solid white;
-        box-shadow: 0 0 0 2px #667eea;
+        margin-top: 0.25rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- Header -->
-    <div class="subscriptions-header">
+<!-- Hero Section -->
+<div class="products-hero">
+    <div class="container position-relative" style="z-index: 1;">
         <div class="row align-items-center">
-            <div class="col-md-8">
-                <h1 class="fw-bold mb-2">
-                    <i class="fas fa-sync-alt me-3"></i>My Subscriptions
-                </h1>
-                <p class="mb-0 opacity-75">Manage your recurring services and billing</p>
-            </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <a href="{% url 'products' %}" class="btn btn-light btn-lg">
-                    <i class="fas fa-plus me-2"></i>Browse Products
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stats Overview -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value">{{ subscriptions|length }}</div>
-                <div class="stat-label">Total Subscriptions</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value">{{ active_count }}</div>
-                <div class="stat-label">Active</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value">${{ total_monthly_cost }}</div>
-                <div class="stat-label">Monthly Cost</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="stat-card">
-                <div class="stat-value">
-                    {% if subscriptions %}
-                        {{ subscriptions.0.current_period_end|timeuntil }}
-                    {% else %}
-                        --
-                    {% endif %}
-                </div>
-                <div class="stat-label">Next Renewal</div>
-            </div>
-        </div>
-    </div>
-
-    {% if subscriptions %}
-    <!-- Subscriptions List -->
-    <div class="row">
-        <div class="col-12">
-            <h4 class="fw-bold mb-3">Active Subscriptions</h4>
-            
-            {% for subscription in subscriptions %}
-            <div class="subscription-card">
-                <!-- Status Bar -->
-                <div class="subscription-status-bar {% if subscription.status != 'active' %}{{ subscription.status }}{% endif %}"></div>
-                
-                <div class="subscription-body">
-                    <div class="row align-items-start">
-                        <!-- Left: Product Info -->
-                        <div class="col-lg-8">
-                            <div class="d-flex align-items-start">
-                                <!-- Icon -->
-                                <div class="subscription-icon 
-                                    {% if subscription.status == 'active' %}icon-active
-                                    {% elif subscription.status == 'canceled' %}icon-canceled
-                                    {% else %}icon-warning{% endif %}">
-                                    <i class="fas 
-                                        {% if subscription.status == 'active' %}fa-check-circle
-                                        {% elif subscription.status == 'canceled' %}fa-times-circle
-                                        {% else %}fa-exclamation-circle{% endif %}">
-                                    </i>
-                                </div>
-                                
-                                <!-- Details -->
-                                <div class="flex-grow-1 ms-3">
-                                    <div class="d-flex align-items-center gap-3 mb-2">
-                                        <h4 class="fw-bold mb-0">{{ subscription.product.name }}</h4>
-                                        
-                                        {% if subscription.status == 'active' %}
-                                            <span class="status-badge-custom status-active">
-                                                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
-                                                Active
-                                            </span>
-                                        {% elif subscription.status == 'canceled' %}
-                                            <span class="status-badge-custom status-canceled">
-                                                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
-                                                Canceled
-                                            </span>
-                                        {% elif subscription.status == 'past_due' %}
-                                            <span class="status-badge-custom status-past-due">
-                                                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
-                                                Past Due
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                    
-                                    <p class="text-muted mb-3">
-                                        {{ subscription.product.description|truncatewords:20 }}
-                                    </p>
-                                    
-                                    <!-- Subscription Details Grid -->
-                                    <div class="subscription-details">
-                                        <div class="detail-item">
-                                            <div class="detail-icon">
-                                                <i class="fas fa-calendar"></i>
-                                            </div>
-                                            <div>
-                                                <small class="text-muted d-block">Billing Cycle</small>
-                                                <strong>{{ subscription.billing_cycle|title }}</strong>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="detail-item">
-                                            <div class="detail-icon">
-                                                <i class="fas fa-clock"></i>
-                                            </div>
-                                            <div>
-                                                <small class="text-muted d-block">
-                                                    {% if subscription.status == 'active' %}Next Billing
-                                                    {% elif subscription.canceled_at %}Canceled On
-                                                    {% else %}Started{% endif %}
-                                                </small>
-                                                <strong>
-                                                    {% if subscription.status == 'active' %}
-                                                        {{ subscription.current_period_end|date:"M d, Y" }}
-                                                    {% elif subscription.canceled_at %}
-                                                        {{ subscription.canceled_at|date:"M d, Y" }}
-                                                    {% else %}
-                                                        {{ subscription.created_at|date:"M d, Y" }}
-                                                    {% endif %}
-                                                </strong>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="detail-item">
-                                            <div class="detail-icon">
-                                                <i class="fas fa-hashtag"></i>
-                                            </div>
-                                            <div>
-                                                <small class="text-muted d-block">Subscription ID</small>
-                                                <strong>#{{ subscription.id }}</strong>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Right: Price & Actions -->
-                        <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
-                            <div class="mb-3">
-                                <div class="h2 fw-bold text-primary mb-1">
-                                    ${{ subscription.price }}
-                                </div>
-                                <small class="text-muted">per {{ subscription.billing_cycle }}</small>
-                            </div>
-                            
-                            <div class="action-buttons justify-content-lg-end">
-                                {% if subscription.status == 'active' %}
-                                    <button class="btn btn-outline-danger btn-manage" onclick="confirmCancel({{ subscription.id }})">
-                                        <i class="fas fa-times me-2"></i>Cancel
-                                    </button>
-                                    <button class="btn btn-outline-primary btn-manage" disabled>
-                                        <i class="fas fa-cog me-2"></i>Manage
-                                    </button>
-                                {% elif subscription.status == 'canceled' %}
-                                    <button class="btn btn-primary btn-manage" disabled>
-                                        <i class="fas fa-redo me-2"></i>Reactivate
-                                    </button>
-                                {% elif subscription.status == 'past_due' %}
-                                    <button class="btn btn-warning btn-manage">
-                                        <i class="fas fa-credit-card me-2"></i>Update Payment
-                                    </button>
-                                {% endif %}
-                            </div>
-                        </div>
+            <div class="col-lg-8 mx-auto text-center">
+                <span class="badge bg-white bg-opacity-25 text-white mb-3 px-3 py-2">
+                    <i class="fas fa-satellite me-2"></i>Real-Time Satellite Intelligence
+                </span>
+                <h1 class="display-3 fw-bold mb-4">Choose Your Plan</h1>
+                <p class="lead mb-4">
+                    Access real-time geospatial data from our fleet of low-orbit satellites. 
+                    Monitor climate change, track deforestation, and analyze urban expansion with AI-powered insights.
+                </p>
+                <div class="d-flex gap-3 justify-content-center">
+                    <div class="stat-chip">
+                        <i class="fas fa-check-circle me-2"></i>24/7 Monitoring
                     </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    
-    {% else %}
-    <!-- Empty State -->
-    <div class="subscription-card">
-        <div class="empty-state">
-            <i class="fas fa-inbox empty-icon"></i>
-            <h3 class="fw-bold mb-3">No Active Subscriptions</h3>
-            <p class="text-muted mb-4">
-                You don't have any subscriptions yet. Explore our products to find the perfect plan for your needs.
-            </p>
-            <a href="{% url 'products' %}" class="btn btn-primary btn-lg px-5">
-                <i class="fas fa-shopping-cart me-2"></i>Browse Products
-            </a>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Info Cards Row -->
-    <div class="row g-4 mt-4">
-        <div class="col-md-4">
-            <div class="info-card" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);">
-                <div class="d-flex align-items-start">
-                    <div class="info-card-icon" style="background: #3b82f6; color: white;">
-                        <i class="fas fa-calendar-check"></i>
+                    <div class="stat-chip">
+                        <i class="fas fa-shield-alt me-2"></i>Enterprise Security
                     </div>
-                    <div class="ms-3">
-                        <h6 class="fw-bold mb-2">Flexible Billing</h6>
-                        <p class="text-muted small mb-0">Choose monthly or annual billing cycles</p>
+                    <div class="stat-chip">
+                        <i class="fas fa-bolt me-2"></i>Real-Time Updates
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="col-md-4">
-            <div class="info-card" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);">
-                <div class="d-flex align-items-start">
-                    <div class="info-card-icon" style="background: #10b981; color: white;">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div class="ms-3">
-                        <h6 class="fw-bold mb-2">Secure Payments</h6>
-                        <p class="text-muted small mb-0">Protected by Stripe with PCI compliance</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="info-card" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
-                <div class="d-flex align-items-start">
-                    <div class="info-card-icon" style="background: #f59e0b; color: white;">
-                        <i class="fas fa-bell"></i>
-                    </div>
-                    <div class="ms-3">
-                        <h6 class="fw-bold mb-2">Renewal Alerts</h6>
-                        <p class="text-muted small mb-0">Never miss a payment with email reminders</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Back Button -->
-    <div class="text-center mt-5">
-        <a href="{% url 'dashboards' %}" class="btn btn-outline-secondary btn-lg px-5">
-            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-        </a>
     </div>
 </div>
 
-<script>
-function confirmCancel(subscriptionId) {
-    if (confirm('Are you sure you want to cancel this subscription? You will still have access until the end of your billing period.')) {
-        // TODO: Implement cancel subscription functionality with Stripe
-        alert('Subscription cancellation will be implemented with Stripe integration');
-        // You can add AJAX call here to cancel via Django view
-    }
-}
+<div class="container">
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="row">
+            <div class="col-md-3 stat-item">
+                <span class="stat-number">500+</span>
+                <span class="stat-label">Active Users</span>
+            </div>
+            <div class="col-md-3 stat-item">
+                <span class="stat-number">2.5M+</span>
+                <span class="stat-label">Observations</span>
+            </div>
+            <div class="col-md-3 stat-item">
+                <span class="stat-number">99.9%</span>
+                <span class="stat-label">Uptime</span>
+            </div>
+            <div class="col-md-3 stat-item">
+                <span class="stat-number">24/7</span>
+                <span class="stat-label">Support</span>
+            </div>
+        </div>
+    </div>
 
-// Add smooth scroll animations
-document.addEventListener('DOMContentLoaded', function() {
-    const cards = document.querySelectorAll('.subscription-card, .stat-card, .info-card');
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '0';
-                entry.target.style.transform = 'translateY(20px)';
-                setTimeout(() => {
-                    entry.target.style.transition = 'all 0.5s ease';
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }, 100);
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.1 });
-    
-    cards.forEach(card => observer.observe(card));
+    <!-- Filter Pills -->
+    <div class="filter-pills justify-content-center">
+        <button class="filter-pill active">All Products</button>
+        <button class="filter-pill">Starter</button>
+        <button class="filter-pill">Professional</button>
+        <button class="filter-pill">Enterprise</button>
+    </div>
+
+    <!-- Products Grid -->
+    {% if products %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        {% for product in products %}
+        <div class="col">
+            <div class="product-card">
+                <!-- Product Header with Gradient -->
+                <div class="product-header">
+                    {% if forloop.counter == 2 %}
+                    <span class="popular-badge">
+                        <i class="fas fa-star me-1"></i>Most Popular
+                    </span>
+                    {% endif %}
+                    
+                    <span class="category-badge">
+                        {{ product.category|default:"Analytics" }}
+                    </span>
+                    
+                    <div class="product-icon">
+                        {% if "Starter" in product.name %}
+                            <i class="fas fa-seedling"></i>
+                        {% elif "Pro" in product.name or "Professional" in product.name %}
+                            <i class="fas fa-rocket"></i>
+                        {% elif "Enterprise" in product.name %}
+                            <i class="fas fa-building"></i>
+                        {% else %}
+                            <i class="fas fa-satellite"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <h3 class="h4 mb-3 fw-bold">{{ product.name }}</h3>
+                    
+                    <div>
+                        <p class="price-tag">${{ product.price }}</p>
+                        <p class="price-period">one-time payment</p>
+                    </div>
+                </div>
+                
+                <!-- Product Body -->
+                <div class="product-body">
+                    <p class="text-muted mb-4">{{ product.description|truncatewords:20 }}</p>
+                    
+                    <ul class="feature-list">
+                        <li>
+                            <span class="feature-icon">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <span>API Access with JWT</span>
+                        </li>
+                        <li>
+                            <span class="feature-icon">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <span>Real-time Data Updates</span>
+                        </li>
+                        <li>
+                            <span class="feature-icon">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <span>Geospatial Intelligence</span>
+                        </li>
+                        <li>
+                            <span class="feature-icon">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <span>Advanced Analytics Dashboard</span>
+                        </li>
+                        <li>
+                            <span class="feature-icon">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <span>24/7 Technical Support</span>
+                        </li>
+                    </ul>
+                    
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'checkout' product.id %}" class="btn btn-purchase">
+                            <i class="fas fa-shopping-cart me-2"></i>Purchase Now
+                        </a>
+                    {% else %}
+                        <a href="{% url 'signin' %}" class="btn btn-purchase">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In to Purchase
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <i class="fas fa-box-open text-muted mb-4" style="font-size: 5rem; opacity: 0.3;"></i>
+        <h3 class="text-muted mb-3">No Products Available</h3>
+        <p class="text-muted">Check back soon for exciting new offerings!</p>
+    </div>
+    {% endif %}
+
+    <!-- Features Section -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-shield-check" style="font-size: 3rem; color: #667eea;"></i>
+                </div>
+                <h5 class="fw-bold">Secure & Reliable</h5>
+                <p class="text-muted">Enterprise-grade security with 99.9% uptime guarantee</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-headset" style="font-size: 3rem; color: #667eea;"></i>
+                </div>
+                <h5 class="fw-bold">24/7 Support</h5>
+                <p class="text-muted">Expert technical support available around the clock</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-sync-alt" style="font-size: 3rem; color: #667eea;"></i>
+                </div>
+                <h5 class="fw-bold">Easy Integration</h5>
+                <p class="text-muted">Simple REST API with comprehensive documentation</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="text-center mb-5 p-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 24px; color: white;">
+        <h2 class="fw-bold mb-3">Need a Custom Solution?</h2>
+        <p class="lead mb-4">Contact our sales team for enterprise plans and custom pricing</p>
+        <button class="btn btn-light btn-lg px-5">
+            <i class="fas fa-envelope me-2"></i>Contact Sales
+        </button>
+    </div>
+</div>
+
+<style>
+    .stat-chip {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+</style>
+
+<script>
+// Filter functionality
+document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', function() {
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        this.classList.add('active');
+        // Add your filtering logic here
+    });
 });
 </script>
 {% endblock %}
