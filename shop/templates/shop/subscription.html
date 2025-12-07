@@ -1,41 +1,277 @@
 {% extends "base.html" %}
 
-{% block title %}Subscriptions - TerraScope{% endblock %}
+{% block title %}My Subscriptions - TerraScope{% endblock %}
+
+{% block extra_css %}
+<style>
+    .subscriptions-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .subscription-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s;
+        margin-bottom: 1.5rem;
+    }
+    
+    .subscription-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.2);
+    }
+    
+    .subscription-status-bar {
+        height: 6px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .subscription-status-bar.canceled {
+        background: #ef4444;
+    }
+    
+    .subscription-status-bar.past-due {
+        background: #fbbf24;
+    }
+    
+    .subscription-body {
+        padding: 2rem;
+    }
+    
+    .subscription-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+    }
+    
+    .icon-active {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+    
+    .icon-canceled {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+    
+    .icon-warning {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: white;
+    }
+    
+    .status-badge-custom {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .status-active {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .status-canceled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .status-past-due {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .subscription-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        padding: 1.5rem;
+        background: #f9fafb;
+        border-radius: 12px;
+        margin-top: 1rem;
+    }
+    
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .detail-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #667eea;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-label {
+        color: #6b7280;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-manage {
+        border-radius: 10px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    
+    .empty-icon {
+        font-size: 5rem;
+        color: #e5e7eb;
+        margin-bottom: 2rem;
+    }
+    
+    .info-card {
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .info-card-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e5e7eb;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    
+    .timeline-dot {
+        position: absolute;
+        left: -2.375rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #667eea;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px #667eea;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-4">
     <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h2 class="fw-bold mb-1">My Subscriptions</h2>
-            <p class="text-muted">Manage your recurring services and subscriptions</p>
+    <div class="subscriptions-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="fw-bold mb-2">
+                    <i class="fas fa-sync-alt me-3"></i>My Subscriptions
+                </h1>
+                <p class="mb-0 opacity-75">Manage your recurring services and billing</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'products' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus me-2"></i>Browse Products
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="row mb-4 g-3">
-        <div class="col-md-4">
-            <div class="card card-soft border-0">
-                <div class="card-body text-center p-4">
-                    <h3 class="fw-bold text-primary mb-1">{{ subscriptions|length }}</h3>
-                    <p class="text-muted mb-0 small">Total Subscriptions</p>
-                </div>
+    <!-- Stats Overview -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ subscriptions|length }}</div>
+                <div class="stat-label">Total Subscriptions</div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card card-soft border-0">
-                <div class="card-body text-center p-4">
-                    <h3 class="fw-bold text-success mb-1">{{ active_count }}</h3>
-                    <p class="text-muted mb-0 small">Active</p>
-                </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">{{ active_count }}</div>
+                <div class="stat-label">Active</div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card card-soft border-0">
-                <div class="card-body text-center p-4">
-                    <h3 class="fw-bold text-primary mb-1">${{ total_monthly_cost }}</h3>
-                    <p class="text-muted mb-0 small">Monthly Cost</p>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">${{ total_monthly_cost }}</div>
+                <div class="stat-label">Monthly Cost</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-value">
+                    {% if subscriptions %}
+                        {{ subscriptions.0.current_period_end|timeuntil }}
+                    {% else %}
+                        --
+                    {% endif %}
                 </div>
+                <div class="stat-label">Next Renewal</div>
             </div>
         </div>
     </div>
@@ -44,75 +280,129 @@
     <!-- Subscriptions List -->
     <div class="row">
         <div class="col-12">
+            <h4 class="fw-bold mb-3">Active Subscriptions</h4>
+            
             {% for subscription in subscriptions %}
-            <div class="card card-soft border-0 mb-3">
-                <div class="card-body p-4">
-                    <div class="row align-items-center">
-                        <!-- Subscription Info -->
+            <div class="subscription-card">
+                <!-- Status Bar -->
+                <div class="subscription-status-bar {% if subscription.status != 'active' %}{{ subscription.status }}{% endif %}"></div>
+                
+                <div class="subscription-body">
+                    <div class="row align-items-start">
+                        <!-- Left: Product Info -->
                         <div class="col-lg-8">
                             <div class="d-flex align-items-start">
                                 <!-- Icon -->
-                                <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
-                                    <i class="fas fa-sync-alt text-primary fs-4"></i>
+                                <div class="subscription-icon 
+                                    {% if subscription.status == 'active' %}icon-active
+                                    {% elif subscription.status == 'canceled' %}icon-canceled
+                                    {% else %}icon-warning{% endif %}">
+                                    <i class="fas 
+                                        {% if subscription.status == 'active' %}fa-check-circle
+                                        {% elif subscription.status == 'canceled' %}fa-times-circle
+                                        {% else %}fa-exclamation-circle{% endif %}">
+                                    </i>
                                 </div>
                                 
                                 <!-- Details -->
-                                <div class="flex-grow-1">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <h5 class="fw-bold mb-0 me-3">{{ subscription.product.name }}</h5>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="d-flex align-items-center gap-3 mb-2">
+                                        <h4 class="fw-bold mb-0">{{ subscription.product.name }}</h4>
+                                        
                                         {% if subscription.status == 'active' %}
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-check-circle me-1"></i>Active
+                                            <span class="status-badge-custom status-active">
+                                                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                                                Active
                                             </span>
                                         {% elif subscription.status == 'canceled' %}
-                                            <span class="badge bg-danger">
-                                                <i class="fas fa-times-circle me-1"></i>Canceled
+                                            <span class="status-badge-custom status-canceled">
+                                                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                                                Canceled
                                             </span>
                                         {% elif subscription.status == 'past_due' %}
-                                            <span class="badge bg-warning">
-                                                <i class="fas fa-exclamation-circle me-1"></i>Past Due
-                                            </span>
-                                        {% elif subscription.status == 'expired' %}
-                                            <span class="badge bg-secondary">
-                                                <i class="fas fa-clock me-1"></i>Expired
+                                            <span class="status-badge-custom status-past-due">
+                                                <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                                                Past Due
                                             </span>
                                         {% endif %}
                                     </div>
                                     
-                                    <p class="text-muted mb-2 small">
-                                        {{ subscription.product.description|truncatewords:15 }}
+                                    <p class="text-muted mb-3">
+                                        {{ subscription.product.description|truncatewords:20 }}
                                     </p>
                                     
-                                    <div class="text-muted small">
-                                        <i class="fas fa-calendar-alt me-1"></i>
-                                        {% if subscription.status == 'active' %}
-                                            Next billing: {{ subscription.current_period_end|date:"F d, Y" }}
-                                        {% elif subscription.canceled_at %}
-                                            Canceled on {{ subscription.canceled_at|date:"F d, Y" }}
-                                        {% else %}
-                                            Started {{ subscription.created_at|date:"F d, Y" }}
-                                        {% endif %}
+                                    <!-- Subscription Details Grid -->
+                                    <div class="subscription-details">
+                                        <div class="detail-item">
+                                            <div class="detail-icon">
+                                                <i class="fas fa-calendar"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block">Billing Cycle</small>
+                                                <strong>{{ subscription.billing_cycle|title }}</strong>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="detail-item">
+                                            <div class="detail-icon">
+                                                <i class="fas fa-clock"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block">
+                                                    {% if subscription.status == 'active' %}Next Billing
+                                                    {% elif subscription.canceled_at %}Canceled On
+                                                    {% else %}Started{% endif %}
+                                                </small>
+                                                <strong>
+                                                    {% if subscription.status == 'active' %}
+                                                        {{ subscription.current_period_end|date:"M d, Y" }}
+                                                    {% elif subscription.canceled_at %}
+                                                        {{ subscription.canceled_at|date:"M d, Y" }}
+                                                    {% else %}
+                                                        {{ subscription.created_at|date:"M d, Y" }}
+                                                    {% endif %}
+                                                </strong>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="detail-item">
+                                            <div class="detail-icon">
+                                                <i class="fas fa-hashtag"></i>
+                                            </div>
+                                            <div>
+                                                <small class="text-muted d-block">Subscription ID</small>
+                                                <strong>#{{ subscription.id }}</strong>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Price and Actions -->
-                        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                            <h4 class="fw-bold text-primary mb-1">${{ subscription.price }}</h4>
-                            <small class="text-muted d-block mb-3">per {{ subscription.billing_cycle }}</small>
+                        <!-- Right: Price & Actions -->
+                        <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                            <div class="mb-3">
+                                <div class="h2 fw-bold text-primary mb-1">
+                                    ${{ subscription.price }}
+                                </div>
+                                <small class="text-muted">per {{ subscription.billing_cycle }}</small>
+                            </div>
                             
-                            <div class="d-flex flex-column gap-2">
+                            <div class="action-buttons justify-content-lg-end">
                                 {% if subscription.status == 'active' %}
-                                    <button class="btn btn-sm btn-outline-danger" onclick="confirmCancel({{ subscription.id }})">
-                                        <i class="fas fa-times me-1"></i>Cancel Subscription
+                                    <button class="btn btn-outline-danger btn-manage" onclick="confirmCancel({{ subscription.id }})">
+                                        <i class="fas fa-times me-2"></i>Cancel
                                     </button>
-                                    <button class="btn btn-sm btn-outline-primary" disabled>
-                                        <i class="fas fa-edit me-1"></i>Manage
+                                    <button class="btn btn-outline-primary btn-manage" disabled>
+                                        <i class="fas fa-cog me-2"></i>Manage
                                     </button>
                                 {% elif subscription.status == 'canceled' %}
-                                    <button class="btn btn-sm btn-primary" disabled>
-                                        <i class="fas fa-redo me-1"></i>Reactivate
+                                    <button class="btn btn-primary btn-manage" disabled>
+                                        <i class="fas fa-redo me-2"></i>Reactivate
+                                    </button>
+                                {% elif subscription.status == 'past_due' %}
+                                    <button class="btn btn-warning btn-manage">
+                                        <i class="fas fa-credit-card me-2"></i>Update Payment
                                     </button>
                                 {% endif %}
                             </div>
@@ -123,59 +413,71 @@
             {% endfor %}
         </div>
     </div>
-
+    
     {% else %}
     <!-- Empty State -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card card-soft border-0">
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-sync-alt text-muted mb-4" style="font-size: 4rem; opacity: 0.3;"></i>
-                    <h4 class="fw-bold mb-3">No Active Subscriptions</h4>
-                    <p class="text-muted mb-4">You don't have any subscriptions yet. Browse our products to find recurring services.</p>
-                    <a href="{% url 'products' %}" class="btn btn-primary">
-                        <i class="fas fa-shopping-cart me-2"></i>Browse Products
-                    </a>
-                </div>
-            </div>
+    <div class="subscription-card">
+        <div class="empty-state">
+            <i class="fas fa-inbox empty-icon"></i>
+            <h3 class="fw-bold mb-3">No Active Subscriptions</h3>
+            <p class="text-muted mb-4">
+                You don't have any subscriptions yet. Explore our products to find the perfect plan for your needs.
+            </p>
+            <a href="{% url 'products' %}" class="btn btn-primary btn-lg px-5">
+                <i class="fas fa-shopping-cart me-2"></i>Browse Products
+            </a>
         </div>
     </div>
     {% endif %}
 
-    <!-- Info Cards -->
-    <div class="row mt-4 g-3">
+    <!-- Info Cards Row -->
+    <div class="row g-4 mt-4">
         <div class="col-md-4">
-            <div class="card border-0 bg-light">
-                <div class="card-body text-center p-4">
-                    <i class="fas fa-calendar-check text-primary fs-3 mb-3"></i>
-                    <h6 class="fw-semibold mb-2">Flexible Plans</h6>
-                    <small class="text-muted">Choose monthly or annual billing</small>
+            <div class="info-card" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);">
+                <div class="d-flex align-items-start">
+                    <div class="info-card-icon" style="background: #3b82f6; color: white;">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="fw-bold mb-2">Flexible Billing</h6>
+                        <p class="text-muted small mb-0">Choose monthly or annual billing cycles</p>
+                    </div>
                 </div>
             </div>
         </div>
+        
         <div class="col-md-4">
-            <div class="card border-0 bg-light">
-                <div class="card-body text-center p-4">
-                    <i class="fas fa-credit-card text-success fs-3 mb-3"></i>
-                    <h6 class="fw-semibold mb-2">Easy Management</h6>
-                    <small class="text-muted">Cancel or upgrade anytime</small>
+            <div class="info-card" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);">
+                <div class="d-flex align-items-start">
+                    <div class="info-card-icon" style="background: #10b981; color: white;">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="fw-bold mb-2">Secure Payments</h6>
+                        <p class="text-muted small mb-0">Protected by Stripe with PCI compliance</p>
+                    </div>
                 </div>
             </div>
         </div>
+        
         <div class="col-md-4">
-            <div class="card border-0 bg-light">
-                <div class="card-body text-center p-4">
-                    <i class="fas fa-bell text-warning fs-3 mb-3"></i>
-                    <h6 class="fw-semibold mb-2">Renewal Alerts</h6>
-                    <small class="text-muted">Never miss a payment</small>
+            <div class="info-card" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+                <div class="d-flex align-items-start">
+                    <div class="info-card-icon" style="background: #f59e0b; color: white;">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h6 class="fw-bold mb-2">Renewal Alerts</h6>
+                        <p class="text-muted small mb-0">Never miss a payment with email reminders</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Back Button -->
-    <div class="text-center mt-4">
-        <a href="{% url 'dashboards' %}" class="btn btn-outline-secondary">
+    <div class="text-center mt-5">
+        <a href="{% url 'dashboards' %}" class="btn btn-outline-secondary btn-lg px-5">
             <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
         </a>
     </div>
@@ -184,22 +486,32 @@
 <script>
 function confirmCancel(subscriptionId) {
     if (confirm('Are you sure you want to cancel this subscription? You will still have access until the end of your billing period.')) {
-        // TODO: Implement cancel subscription functionality
+        // TODO: Implement cancel subscription functionality with Stripe
         alert('Subscription cancellation will be implemented with Stripe integration');
+        // You can add AJAX call here to cancel via Django view
     }
 }
-</script>
 
-<style>
-    .card-soft {
-        border-radius: 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
-    }
+// Add smooth scroll animations
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.subscription-card, .stat-card, .info-card');
     
-    .card-soft:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-</style>
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '0';
+                entry.target.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    entry.target.style.transition = 'all 0.5s ease';
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }, 100);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    cards.forEach(card => observer.observe(card));
+});
+</script>
 {% endblock %}
