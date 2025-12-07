@@ -63,3 +63,56 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order #{self.id} - {self.user}"
+    
+    # Add this to your existing models.py
+
+class Subscription(models.Model):
+    STATUS_CHOICES = [
+        ("active", "Active"),
+        ("canceled", "Canceled"),
+        ("past_due", "Past Due"),
+        ("expired", "Expired"),
+    ]
+    
+    BILLING_CYCLE_CHOICES = [
+        ("monthly", "Monthly"),
+        ("yearly", "Yearly"),
+    ]
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
+    billing_cycle = models.CharField(max_length=20, choices=BILLING_CYCLE_CHOICES, default="monthly")
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stripe_subscription_id = models.CharField(max_length=255, blank=True, null=True)
+    current_period_start = models.DateTimeField()
+    current_period_end = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    canceled_at = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.product.name} ({self.status})"
+    
+    class Meta:
+        ordering = ['-created_at']
+
+
+class ActivityLog(models.Model):
+    ACTIVITY_TYPES = [
+        ('token_generated', 'API Token Generated'),
+        ('order_placed', 'Order Placed'),
+        ('profile_updated', 'Profile Updated'),
+        ('2fa_enabled', '2FA Enabled'),
+    ]
+    
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='activities')
+    activity_type = models.CharField(max_length=50, choices=ACTIVITY_TYPES)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = 'Activity Logs'
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.activity_type} - {self.created_at}"

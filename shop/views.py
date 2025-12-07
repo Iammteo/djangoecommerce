@@ -14,6 +14,12 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 import pyotp 
 import stripe
+import os
+import jwt
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from datetime import datetime
+from datetime import timedelta
 
 
 
@@ -38,11 +44,15 @@ def products_page(request):
 
 @login_required(login_url="signin")
 def dashboard_page(request):
-    # Get user's orders
+    from .models import ActivityLog
+    
+    # Get user's orders and activities
     total_orders = Order.objects.filter(user=request.user).count()
+    recent_activities = ActivityLog.objects.filter(user=request.user)[:5]  # Last 5 activities
     
     context = {
         'total_orders': total_orders,
+        'recent_activities': recent_activities,
     }
     return render(request, "shop/dashboard.html", context)
 
@@ -95,11 +105,6 @@ def signin_page(request):
         return redirect("dashboards")
 
     return render(request, "shop/signin.html")
-
-
-
-
-
 
 
 
@@ -323,7 +328,7 @@ def profile_page(request):
 
 @login_required(login_url="signin")
 def subscriptions_page(request):
-    return render(request, "shop/subscriptions.html")   
+    return render(request, "shop/subscription.html")   
 
 @login_required(login_url="signin")
 def orders_page(request):
@@ -393,7 +398,7 @@ def checkout(request, product_id):
 
 
 @login_required(login_url="signin")
-def payment_success(request):
+def success(request):
     print("=" * 50)
     print("PAYMENT SUCCESS VIEW CALLED")
     print(f"User: {request.user.email}")
@@ -444,15 +449,18 @@ def payment_success(request):
         messages.warning(request, "No payment session found.")
     
     print("=" * 50)
-    return render(request, 'shop/payment_success.html')
+    return render(request, 'shop/success.html')
 
 
 def payment_cancel(request):
     messages.warning(request, "Payment was cancelled.")
     return render(request, 'shop/payment_cancel.html')
 
-def success(request):
-    return render(request, "shop/success.html")
+# def success(request):
+#     order = Order.objects.get(id=request.GET.get('order_id'))
+#     order.status = 'paid'
+#     order.save()
+#     return render(request, "shop/success.html")
 
 @login_required(login_url="signin")
 def orders_page(request):
@@ -469,3 +477,92 @@ def orders_page(request):
         'total_spent': total_spent,
     }
     return render(request, "shop/orders.html", context)
+
+
+
+
+# Add this to shop/views.py after the existing imports
+@login_required(login_url="signin")
+def generate_api_token(request):
+    """Generate a JWT token for the authenticated user"""
+    if request.method == "POST":
+        try:
+            # Check if user has an active subscription/order (optional for testing)
+            # has_access = Order.objects.filter(user=request.user, status='paid').exists()
+            # if not has_access:
+            #     return JsonResponse({'success': False, 'error': 'You need to purchase a product to access the API.'}, status=403)
+            
+            # Generate JWT token
+            jwt_secret = os.getenv("JWT_SECRET_KEY", "xK9mP4nF2vL8wQ7rT6sY3hU5jB1cA0dE9gH8fI7kJ6mN5oP4qR3sT2uV1wX0yZ")
+            
+            payload = {
+                "sub": request.user.email,
+                "name": request.user.username,
+                "user_id": request.user.id,
+                "iat": timezone.now(),
+                "exp": timezone.now() + timedelta(hours=24),
+            }
+            
+            token = jwt.encode(payload, jwt_secret, algorithm="HS256")
+            
+            # Return JSON response (for the JavaScript fetch)
+            return JsonResponse({
+                'success': True,
+                'token': token,
+                'expires_in': '24 hours'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
+    
+    # GET request - show the page
+    return render(request, 'shop/api_token.html')
+
+
+@login_required(login_url="signin")
+def api_token_page(request):
+    """Display the API token generation page"""
+    return render(request, "shop/api_token.html")
+
+
+
+
+@login_required(login_url="signin")
+def api_documentation(request):
+    """
+    Display API documentation and allow users to test endpoints
+    Links to the Flask API's Swagger UI
+    """
+    # Flask API base URL (update based on your deployment)
+    flask_api_url = os.getenv("FLASK_API_URL", "http://127.0.0.1:5000")
+    
+    context = {
+        'api_base_url': flask_api_url,
+        'swagger_url': f"{flask_api_url}/docs",
+        'openapi_url': f"{flask_api_url}/openapi.json"
+    }
+    
+    return render(request, 'shop/api_docs.html', context)
+
+@login_required(login_url="signin")
+def subscriptions_page(request):
+    from .models import Subscription  # Add this import at the top if not already there
+    
+    subscriptions = Subscription.objects.filter(user=request.user).select_related('product')
+    active_subscriptions = subscriptions.filter(status='active')
+    
+    # Calculate stats
+    active_count = active_subscriptions.count()
+    total_monthly_cost = sum(
+        sub.price for sub in active_subscriptions if sub.billing_cycle == 'monthly'
+    )
+    
+    context = {
+        'subscriptions': subscriptions,
+        'active_count': active_count,
+        'total_monthly_cost': total_monthly_cost,
+    }
+    return render(request, "shop/subscription.html", context)

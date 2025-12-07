@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}API Token - TerraScope{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <div class="bg-primary bg-opacity-10 p-4 rounded-circle d-inline-block mb-3">
+                    <i class="fas fa-key text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h2 class="fw-bold mb-2">API Token Generator</h2>
+                <p class="text-muted">Generate a JWT token to authenticate your API requests</p>
+            </div>
+
+            <!-- Token Display (Hidden by default) -->
+            <div id="tokenDisplay" class="card border-0 shadow-sm mb-4 d-none">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">
+                            <i class="fas fa-check-circle text-success me-2"></i>Your API Token
+                        </h5>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                    
+                    <div class="alert alert-light border mb-3">
+                        <small class="text-muted d-block mb-2">Token (click to copy):</small>
+                        <div class="d-flex align-items-start">
+                            <code id="tokenValue" class="flex-grow-1 text-break" 
+                                  style="font-size: 0.8rem; word-break: break-all;"></code>
+                            <button class="btn btn-sm btn-outline-primary ms-2 flex-shrink-0" onclick="copyToken()" type="button">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="bg-light p-3 rounded">
+                                <small class="text-muted d-block mb-1">Expires In</small>
+                                <strong id="expiresIn">24 hours</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-light p-3 rounded">
+                                <small class="text-muted d-block mb-1">Token Type</small>
+                                <strong>Bearer JWT</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Display (Hidden by default) -->
+            <div id="errorDisplay" class="alert alert-danger d-none" role="alert">
+                <h6 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Error</h6>
+                <p id="errorMessage" class="mb-0"></p>
+            </div>
+
+            <!-- Generate Token Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Generate New Token</h5>
+                    <p class="text-muted mb-4">
+                        Click the button below to generate a new JWT token. This token will be valid for 24 hours 
+                        and can be used to authenticate API requests.
+                    </p>
+                    
+                    <form id="tokenForm">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-lg" id="generateBtn">
+                            <i class="fas fa-key me-2"></i>Generate Token
+                        </button>
+                        <a href="{% url 'api_documentation' %}" class="btn btn-outline-secondary btn-lg ms-2">
+                            <i class="fas fa-book me-2"></i>View Documentation
+                        </a>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Usage Example -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-code me-2 text-primary"></i>Usage Example
+                    </h5>
+                    <p class="text-muted mb-3">Use your token in the Authorization header:</p>
+                    
+                    <div class="bg-dark text-light p-3 rounded">
+                        <pre class="mb-0" style="color: #a9b7c6;"><code>curl -X GET "https://api.terrascope.com/v1/data" \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json"</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center mt-4">
+                <a href="{% url 'dashboards' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Prevent any form submission
+document.getElementById('tokenForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const btn = document.getElementById('generateBtn');
+    const originalHTML = btn.innerHTML;
+    const errorDisplay = document.getElementById('errorDisplay');
+    const tokenDisplay = document.getElementById('tokenDisplay');
+    
+    // Hide previous displays
+    errorDisplay.classList.add('d-none');
+    tokenDisplay.classList.add('d-none');
+    
+    // Show loading state
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+    
+    try {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        const response = await fetch('{% url "generate_api_token" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.token) {
+            // Display the token - IT STAYS NOW!
+            document.getElementById('tokenValue').textContent = data.token;
+            document.getElementById('expiresIn').textContent = data.expires_in || '24 hours';
+            tokenDisplay.classList.remove('d-none');
+            
+            // Scroll to token display
+            tokenDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            document.getElementById('errorMessage').textContent = data.error || 'Failed to generate token';
+            errorDisplay.classList.remove('d-none');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('errorMessage').textContent = 'Network error: ' + error.message;
+        errorDisplay.classList.remove('d-none');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+    
+    return false; // Extra safety to prevent form submission
+});
+
+function copyToken() {
+    const token = document.getElementById('tokenValue').textContent;
+    navigator.clipboard.writeText(token).then(() => {
+        alert('Token copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy token');
+    });
+}
+</script>
+
+<style>
+    code {
+        background: transparent;
+        color: inherit;
+        padding: 0;
+    }
+    
+    pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin: 0;
+    }
+</style>
+{% endblock %}

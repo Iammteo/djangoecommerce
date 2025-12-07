@@ -30,6 +30,13 @@ urlpatterns = [
     path('subscriptions/', views.subscriptions_page, name='subscriptions'),
     path('orders/', views.orders_page, name='orders'),
 
+    # API endpoints
+    path('api/generate-token', views.generate_api_token, name='generate_api_token'),
+    path ('api/documentation', views.api_documentation, name='api_documentation'),
+    path('api/token/', views.api_token_page, name='api_token'),
+
+    
+
     # Payment URLs
 path('checkout/<int:product_id>/', views.checkout, name='checkout'),
 path('payment/success/', views.success, name='payment_success'),
