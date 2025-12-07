@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.conf import settings
 
+
+
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     is_email_verified = models.BooleanField(default=False)
@@ -116,3 +118,45 @@ class ActivityLog(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.activity_type} - {self.created_at}"
+    
+#     class APIToken(models.Model):
+        
+#      """Track user API tokens"""
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='api_tokens')
+#     token = models.TextField()
+#     name = models.CharField(max_length=100, default="Default Token")
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     expires_at = models.DateTimeField()
+#     is_active = models.BooleanField(default=True)
+#     last_used = models.DateTimeField(null=True, blank=True)
+    
+#     class Meta:
+#         ordering = ['-created_at']
+    
+#     def __str__(self):
+#         return f"{self.user.username} - {self.name}"
+    
+#     def is_expired(self):
+#         return timezone.now() > self.expires_at
+    
+#     def token_preview(self):
+#         """Return first 20 and last 10 characters for display"""
+#         if len(self.token) > 30:
+#             return f"{self.token[:20]}...{self.token[-10:]}"
+#         return self.token
+
+
+# class APIUsageLog(models.Model):
+#     """Track API usage for analytics"""
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='api_usage')
+#     endpoint = models.CharField(max_length=200)
+#     method = models.CharField(max_length=10)  # GET, POST, PUT, DELETE, PATCH
+#     status_code = models.IntegerField()
+#     timestamp = models.DateTimeField(auto_now_add=True)
+#     response_time = models.FloatField(null=True, blank=True)  # in milliseconds
+    
+#     class Meta:
+#         ordering = ['-timestamp']
+    
+#     def __str__(self):
+#         return f"{self.user.username} - {self.method} {self.endpoint} - {self.status_code}"
