@@ -481,45 +481,209 @@ def orders_page(request):
 
 
 
-# Add this to shop/views.py after the existing imports
 @login_required(login_url="signin")
+def api_management(request):
+    """Main API management dashboard"""
+    from .models import APIToken, APIUsageLog
+    
+    # Get user's tokens
+    tokens = APIToken.objects.filter(user=request.user)
+    active_tokens = tokens.filter(is_active=True, expires_at__gt=timezone.now())
+    
+    # Get API usage statistics
+    usage_logs = APIUsageLog.objects.filter(user=request.user)
+    
+    # Calculate statistics
+    total_calls = usage_logs.count()
+    successful_calls = usage_logs.filter(status_code__lt=400).count()
+    failed_calls = usage_logs.filter(status_code__gte=400).count()
+    
+    # Get recent activity
+    recent_usage = usage_logs[:10]
+    
+    context = {
+        'tokens': tokens,
+        'active_tokens': active_tokens,
+        'total_calls': total_calls,
+        'successful_calls': successful_calls,
+        'failed_calls': failed_calls,
+        'recent_usage': recent_usage,
+    }
+    
+    return render(request, 'shop/api_management.html', context)
+
+
+@login_required(login_url="signin")
+@require_http_methods(["POST"])
 def generate_api_token(request):
-    """Generate a JWT token for the authenticated user"""
-    if request.method == "POST":
-        try:
-            # Check if user has an active subscription/order (optional for testing)
-            # has_access = Order.objects.filter(user=request.user, status='paid').exists()
-            # if not has_access:
-            #     return JsonResponse({'success': False, 'error': 'You need to purchase a product to access the API.'}, status=403)
-            
-            # Generate JWT token
-            jwt_secret = os.getenv("JWT_SECRET_KEY", "xK9mP4nF2vL8wQ7rT6sY3hU5jB1cA0dE9gH8fI7kJ6mN5oP4qR3sT2uV1wX0yZ")
-            
-            payload = {
-                "sub": request.user.email,
-                "name": request.user.username,
-                "user_id": request.user.id,
-                "iat": timezone.now(),
-                "exp": timezone.now() + timedelta(hours=24),
-            }
-            
-            token = jwt.encode(payload, jwt_secret, algorithm="HS256")
-            
-            # Return JSON response (for the JavaScript fetch)
-            return JsonResponse({
-                'success': True,
-                'token': token,
-                'expires_in': '24 hours'
-            })
-            
-        except Exception as e:
+    """Generate a new JWT token and save it to database"""
+    from .models import APIToken
+    
+    try:
+        # Check if user has subscription/order
+        has_subscription = Order.objects.filter(
+            user=request.user,
+            status='paid'
+        ).exists()
+        
+        if not has_subscription:
             return JsonResponse({
                 'success': False,
-                'error': str(e)
-            }, status=500)
+                'error': 'Please purchase a product to access the API'
+            }, status=403)
+        
+        # Get token name from request
+        token_name = request.POST.get('token_name', 'API Token')
+        
+        # Generate JWT token
+        jwt_secret = os.getenv(
+            "JWT_SECRET_KEY", 
+            "xK9mP4nF2vL8wQ7rT6sY3hU5jB1cA0dE9gH8fI7kJ6mN5oP4qR3sT2uV1wX0yZ"
+        )
+        
+        expires_at = timezone.now() + timedelta(hours=24)
+        
+        payload = {
+            "sub": request.user.email,
+            "name": request.user.username,
+            "user_id": request.user.id,
+            "iat": timezone.now(),
+            "exp": expires_at,
+        }
+        
+        token = jwt.encode(payload, jwt_secret, algorithm="HS256")
+        
+        # Save token to database
+        api_token = APIToken.objects.create(
+            user=request.user,
+            token=token,
+            name=token_name,
+            expires_at=expires_at,
+            is_active=True
+        )
+        
+        # Log activity
+        ActivityLog.objects.create(
+            user=request.user,
+            activity_type='token_generated',
+            description=f'Generated API token: {token_name}'
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'token': token,
+            'token_id': api_token.id,
+            'expires_at': expires_at.isoformat(),
+            'expires_in': '24 hours'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+
+@login_required(login_url="signin")
+@require_http_methods(["POST"])
+def revoke_api_token(request, token_id):
+    """Revoke/deactivate a specific token"""
+    from .models import APIToken
     
-    # GET request - show the page
-    return render(request, 'shop/api_token.html')
+    try:
+        token = APIToken.objects.get(id=token_id, user=request.user)
+        token.is_active = False
+        token.save()
+        
+        # Log activity
+        ActivityLog.objects.create(
+            user=request.user,
+            activity_type='profile_updated',
+            description=f'Revoked API token: {token.name}'
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Token revoked successfully'
+        })
+        
+    except APIToken.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Token not found'
+        }, status=404)
+
+
+@login_required(login_url="signin")
+@require_http_methods(["POST"])
+def delete_api_token(request, token_id):
+    """Permanently delete a token"""
+    from .models import APIToken
+    
+    try:
+        token = APIToken.objects.get(id=token_id, user=request.user)
+        token_name = token.name
+        token.delete()
+        
+        # Log activity
+        ActivityLog.objects.create(
+            user=request.user,
+            activity_type='profile_updated',
+            description=f'Deleted API token: {token_name}'
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Token deleted successfully'
+        })
+        
+    except APIToken.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Token not found'
+        }, status=404)
+
+
+
+# # Add this to shop/views.py after the existing imports
+# @login_required(login_url="signin")
+# def generate_api_token(request):
+#     """Generate a JWT token for the authenticated user"""
+#     if request.method == "POST":
+#         try:
+#             # Check if user has an active subscription/order (optional for testing)
+#             # has_access = Order.objects.filter(user=request.user, status='paid').exists()
+#             # if not has_access:
+#             #     return JsonResponse({'success': False, 'error': 'You need to purchase a product to access the API.'}, status=403)
+            
+#             # Generate JWT token
+#             jwt_secret = os.getenv("JWT_SECRET_KEY", "xK9mP4nF2vL8wQ7rT6sY3hU5jB1cA0dE9gH8fI7kJ6mN5oP4qR3sT2uV1wX0yZ")
+            
+#             payload = {
+#                 "sub": request.user.email,
+#                 "name": request.user.username,
+#                 "user_id": request.user.id,
+#                 "iat": timezone.now(),
+#                 "exp": timezone.now() + timedelta(hours=24),
+#             }
+            
+#             token = jwt.encode(payload, jwt_secret, algorithm="HS256")
+            
+#             # Return JSON response (for the JavaScript fetch)
+#             return JsonResponse({
+#                 'success': True,
+#                 'token': token,
+#                 'expires_in': '24 hours'
+#             })
+            
+#         except Exception as e:
+#             return JsonResponse({
+#                 'success': False,
+#                 'error': str(e)
+#             }, status=500)
+    
+#     # GET request - show the page
+#     return render(request, 'shop/api_token.html')
 
 
 @login_required(login_url="signin")
