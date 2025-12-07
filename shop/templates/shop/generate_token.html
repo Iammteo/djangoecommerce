@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block title %}Generate API Token - TerraScope{% endblock %}
+
+{% block extra_css %}
+<style>
+    .gradient-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        color: white;
+    }
+    
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .requirement-item {
+        padding: 1.25rem;
+        border-radius: 12px;
+        background: white;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+    }
+    
+    .requirement-item.met {
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+    
+    .requirement-item.unmet {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    }
+    
+    .pulse-animation {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: .8;
+        }
+    }
+    
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .info-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    
+    .btn-generate {
+        padding: 1rem 3rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-generate:hover:not(:disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-generate:disabled {
+        background: #9ca3af;
+        box-shadow: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            <!-- Hero Section -->
+            <div class="text-center mb-5">
+                <div class="gradient-card p-5 mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center mb-3" 
+                         style="width: 100px; height: 100px; background: rgba(255,255,255,0.2); border-radius: 25px;">
+                        <i class="fas fa-key" style="font-size: 3rem;"></i>
+                    </div>
+                    <h1 class="display-4 fw-bold mb-3">Generate API Access Token</h1>
+                    <p class="lead mb-0">Unlock the power of TerraScope Geospatial Intelligence API</p>
+                </div>
+                
+                <div class="info-badge pulse-animation">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Secure JWT Authentication • 24 Hour Validity
+                </div>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-3 col-sm-6">
+                    <div class="glass-card p-4 text-center h-100">
+                        <div class="feature-icon mx-auto" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2">Full CRUD Access</h6>
+                        <small class="text-muted">Create, read, update & delete observations</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 col-sm-6">
+                    <div class="glass-card p-4 text-center h-100">
+                        <div class="feature-icon mx-auto" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">
+                            <i class="fas fa-filter"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2">Smart Filtering</h6>
+                        <small class="text-muted">Query by date, location & parameters</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 col-sm-6">
+                    <div class="glass-card p-4 text-center h-100">
+                        <div class="feature-icon mx-auto" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2">Bulk Operations</h6>
+                        <small class="text-muted">Process multiple records efficiently</small>
+                    </div>
+                </div>
+                
+                <div class="col-md-3 col-sm-6">
+                    <div class="glass-card p-4 text-center h-100">
+                        <div class="feature-icon mx-auto" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h6 class="fw-bold mb-2">Full Documentation</h6>
+                        <small class="text-muted">Interactive Swagger UI available</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Requirements Check -->
+            <div class="glass-card p-5 mb-4">
+                <h4 class="fw-bold mb-4">
+                    <i class="fas fa-tasks text-primary me-2"></i>
+                    Access Requirements
+                </h4>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="requirement-item {% if user.is_email_verified %}met{% else %}unmet{% endif %}">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    {% if user.is_email_verified %}
+                                        <i class="fas fa-check-circle text-success" style="font-size: 2rem;"></i>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger" style="font-size: 2rem;"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1">Email Verification</h6>
+                                    {% if user.is_email_verified %}
+                                        <small class="text-success">✓ Your email is verified</small>
+                                    {% else %}
+                                        <small class="text-danger">✗ Please verify your email</small>
+                                        <a href="{% url 'verify_email_code' user.id %}" class="btn btn-sm btn-outline-danger ms-2">
+                                            Verify Now
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="requirement-item {% if has_active_subscription %}met{% else %}unmet{% endif %}">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    {% if has_active_subscription %}
+                                        <i class="fas fa-check-circle text-success" style="font-size: 2rem;"></i>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger" style="font-size: 2rem;"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="fw-bold mb-1">Active Subscription</h6>
+                                    {% if has_active_subscription %}
+                                        <small class="text-success">✓ You have API access</small>
+                                    {% else %}
+                                        <small class="text-danger">✗ No active subscription</small>
+                                        <a href="{% url 'products' %}" class="btn btn-sm btn-outline-danger ms-2">
+                                            Purchase Now
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="glass-card p-4 mb-4" style="border-left: 4px solid #f59e0b;">
+                <div class="d-flex">
+                    <div class="me-3">
+                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-2">🔒 Security Best Practices</h6>
+                        <ul class="mb-0 small">
+                            <li>Keep your token secure and never share it publicly</li>
+                            <li>Don't commit tokens to version control (use environment variables)</li>
+                            <li>Tokens expire after 24 hours for security</li>
+                            <li>Generate a new token if you suspect compromise</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate Form -->
+            <div class="glass-card p-5 mb-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="text-center">
+                        <h4 class="fw-bold mb-4">Ready to Generate Your Token?</h4>
+                        
+                        <button type="submit" class="btn btn-primary btn-generate" 
+                                {% if not user.is_email_verified %}disabled{% endif %}>
+                            <i class="fas fa-magic me-2"></i>
+                            Generate API Token
+                        </button>
+                        
+                        {% if not user.is_email_verified %}
+                        <p class="text-muted mt-3 mb-0">
+                            <small>Please complete all requirements above to generate a token</small>
+                        </p>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Quick Start Guide -->
+            <div class="glass-card p-5 mb-4">
+                <h4 class="fw-bold mb-4">
+                    <i class="fas fa-rocket text-primary me-2"></i>
+                    How It Works
+                </h4>
+                
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="d-flex">
+                            <div class="step-number me-3">1</div>
+                            <div>
+                                <h6 class="fw-bold mb-2">Generate Token</h6>
+                                <small class="text-muted">Click the button above to create your unique JWT token</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="d-flex">
+                            <div class="step-number me-3">2</div>
+                            <div>
+                                <h6 class="fw-bold mb-2">Copy & Save</h6>
+                                <small class="text-muted">Securely store your token - it won't be shown again</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="d-flex">
+                            <div class="step-number me-3">3</div>
+                            <div>
+                                <h6 class="fw-bold mb-2">Start Building</h6>
+                                <small class="text-muted">Use the token in your API requests to access data</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="{% url 'api_documentation' %}" class="btn btn-outline-primary btn-lg px-5" style="border-radius: 50px;">
+                    <i class="fas fa-book me-2"></i>
+                    API Documentation
+                </a>
+                <a href="{% url 'dashboards' %}" class="btn btn-outline-secondary btn-lg px-5" style="border-radius: 50px;">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

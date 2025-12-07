@@ -1,0 +1,513 @@
+{% extends "base.html" %}
+
+{% block title %}API Documentation - TerraScope{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-sidebar {
+        position: sticky;
+        top: 100px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+    
+    .doc-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .doc-sidebar::-webkit-scrollbar-thumb {
+        background: #667eea;
+        border-radius: 3px;
+    }
+    
+    .nav-link {
+        color: #6b7280;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .nav-link:hover {
+        background: #f3f4f6;
+        color: #667eea;
+        transform: translateX(5px);
+    }
+    
+    .nav-link.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .gradient-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        color: white;
+        padding: 3rem;
+    }
+    
+    .endpoint-card {
+        background: white;
+        border-radius: 15px;
+        border: 2px solid #e5e7eb;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+    
+    .endpoint-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+    }
+    
+    .method-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .method-get { background: #3b82f6; color: white; }
+    .method-post { background: #10b981; color: white; }
+    .method-put { background: #f59e0b; color: white; }
+    .method-patch { background: #8b5cf6; color: white; }
+    .method-delete { background: #ef4444; color: white; }
+    
+    .code-snippet {
+        background: #1f2937;
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: #e5e7eb;
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        overflow-x: auto;
+        position: relative;
+    }
+    
+    .code-snippet pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    
+    .lang-badge {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        background: rgba(102, 126, 234, 0.3);
+        color: #e0e7ff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .feature-box {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        border: 2px solid rgba(102, 126, 234, 0.2);
+    }
+    
+    .param-table {
+        font-size: 0.9rem;
+    }
+    
+    .param-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .param-name {
+        font-family: 'Courier New', monospace;
+        color: #667eea;
+        font-weight: 600;
+    }
+    
+    .section-title {
+        color: #1f2937;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 3px solid #667eea;
+    }
+    
+    .interactive-cta {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 20px;
+        color: white;
+        padding: 3rem;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="doc-sidebar">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold text-uppercase text-muted mb-3" style="font-size: 0.75rem; letter-spacing: 1px;">
+                            Navigation
+                        </h6>
+                        <nav class="nav flex-column">
+                            <a class="nav-link active" href="#overview">
+                                <i class="fas fa-info-circle me-2"></i>Overview
+                            </a>
+                            <a class="nav-link" href="#authentication">
+                                <i class="fas fa-shield-alt me-2"></i>Authentication
+                            </a>
+                            <a class="nav-link" href="#endpoints">
+                                <i class="fas fa-code me-2"></i>Endpoints
+                            </a>
+                            <a class="nav-link" href="#examples">
+                                <i class="fas fa-terminal me-2"></i>Code Examples
+                            </a>
+                            <a class="nav-link" href="{{ swagger_url }}" target="_blank">
+                                <i class="fas fa-external-link-alt me-2"></i>Interactive Docs
+                            </a>
+                        </nav>
+                        
+                        <hr class="my-3">
+                        
+                        <a href="{% url 'generate_api_token' %}" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-key me-2"></i>Generate Token
+                        </a>
+                        <a href="{% url 'dashboards' %}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-home me-2"></i>Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            
+            <!-- Header -->
+            <div id="overview" class="gradient-header mb-5">
+                <h1 class="display-5 fw-bold mb-3">
+                    <i class="fas fa-satellite me-3"></i>
+                    TerraScope Geospatial Intelligence API
+                </h1>
+                <p class="lead mb-4">
+                    RESTful API for managing real-time satellite observation data with advanced geospatial intelligence capabilities
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <span class="badge bg-white text-dark px-3 py-2">
+                        <i class="fas fa-check-circle text-success me-1"></i>
+                        RESTful Design
+                    </span>
+                    <span class="badge bg-white text-dark px-3 py-2">
+                        <i class="fas fa-lock text-warning me-1"></i>
+                        JWT Authentication
+                    </span>
+                    <span class="badge bg-white text-dark px-3 py-2">
+                        <i class="fas fa-code text-info me-1"></i>
+                        JSON Format
+                    </span>
+                    <span class="badge bg-white text-dark px-3 py-2">
+                        <i class="fas fa-bolt text-danger me-1"></i>
+                        Real-time Data
+                    </span>
+                </div>
+            </div>
+
+            <!-- Base URL Info -->
+            <div class="alert alert-info border-0 shadow-sm mb-5">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-server me-3" style="font-size: 2rem;"></i>
+                    <div>
+                        <h6 class="fw-bold mb-1">API Base URL</h6>
+                        <code class="fs-6">{{ api_base_url }}</code>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Authentication Section -->
+            <section id="authentication" class="mb-5">
+                <h2 class="section-title">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Authentication
+                </h2>
+                
+                <div class="endpoint-card">
+                    <div class="card-body p-4">
+                        <p class="mb-4">All API requests require JWT Bearer token authentication. Include your token in the Authorization header of every request.</p>
+                        
+                        <div class="feature-box mb-4">
+                            <h6 class="fw-bold mb-3">How to Get Your Token</h6>
+                            <ol class="mb-0">
+                                <li class="mb-2">Purchase a TerraScope product from our <a href="{% url 'products' %}">Products page</a></li>
+                                <li class="mb-2"><a href="{% url 'generate_api_token' %}">Generate an API token</a> from your dashboard</li>
+                                <li>Include the token in the Authorization header of your requests</li>
+                            </ol>
+                        </div>
+
+                        <h6 class="fw-bold mb-3">Authentication Example</h6>
+                        <div class="code-snippet">
+                            <span class="lang-badge">bash</span>
+                            <pre>curl -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+     {{ api_base_url }}/api/observations</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Endpoints Section -->
+            <section id="endpoints" class="mb-5">
+                <h2 class="section-title">
+                    <i class="fas fa-code me-2"></i>
+                    API Endpoints
+                </h2>
+
+                <!-- Health Check -->
+                <div class="endpoint-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="method-badge method-get me-3">GET</span>
+                            <code class="fs-6">/health</code>
+                        </div>
+                        <p class="text-muted mb-3">Check API status (no authentication required)</p>
+                        <div class="code-snippet">
+                            <span class="lang-badge">Response</span>
+                            <pre>{"status": "ok"}</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- List Observations -->
+                <div class="endpoint-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="method-badge method-get me-3">GET</span>
+                            <code class="fs-6">/api/observations</code>
+                        </div>
+                        <p class="text-muted mb-3">Retrieve observations with optional filtering</p>
+                        
+                        <h6 class="fw-bold mb-3">Query Parameters</h6>
+                        <table class="table param-table mb-4">
+                            <tbody>
+                                <tr>
+                                    <td class="param-name">start_timestamp</td>
+                                    <td>ISO 8601 datetime - Filter by start date</td>
+                                </tr>
+                                <tr>
+                                    <td class="param-name">end_timestamp</td>
+                                    <td>ISO 8601 datetime - Filter by end date</td>
+                                </tr>
+                                <tr>
+                                    <td class="param-name">min_lat / max_lat</td>
+                                    <td>Number - Latitude range filter</td>
+                                </tr>
+                                <tr>
+                                    <td class="param-name">min_lon / max_lon</td>
+                                    <td>Number - Longitude range filter</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h6 class="fw-bold mb-3">Example Request</h6>
+                        <div class="code-snippet">
+                            <span class="lang-badge">bash</span>
+                            <pre>curl -H "Authorization: Bearer TOKEN" \
+     "{{ api_base_url }}/api/observations?min_lat=50&max_lat=52"</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create Observation -->
+                <div class="endpoint-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="method-badge method-post me-3">POST</span>
+                            <code class="fs-6">/api/observations</code>
+                        </div>
+                        <p class="text-muted mb-3">Create a new observation record</p>
+                        
+                        <h6 class="fw-bold mb-3">Request Body</h6>
+                        <div class="code-snippet">
+                            <span class="lang-badge">json</span>
+                            <pre>{
+  "timestamp": "2025-12-06T12:00:00Z",
+  "timezone": "UTC",
+  "latitude": 51.5074,
+  "longitude": -0.1278,
+  "satellite_id": "SAT-001",
+  "spectral_indices": {
+    "ndvi": 0.75,
+    "ndwi": 0.45
+  },
+  "notes": "Clear sky observation"
+}</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get Single Observation -->
+                <div class="endpoint-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="method-badge method-get me-3">GET</span>
+                            <code class="fs-6">/api/observations/{id}</code>
+                        </div>
+                        <p class="text-muted mb-0">Retrieve a specific observation by ID</p>
+                    </div>
+                </div>
+
+                <!-- Update Operations -->
+                <div class="endpoint-card">
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="method-badge method-put me-3">PUT</span>
+                                <code class="fs-6">/api/observations/{id}</code>
+                            </div>
+                            <p class="text-muted small mb-0">Replace entire observation</p>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="method-badge method-patch me-3">PATCH</span>
+                                <code class="fs-6">/api/observations/{id}</code>
+                            </div>
+                            <p class="text-muted small mb-0">Partially update observation</p>
+                        </div>
+                        <div class="alert alert-warning mt-3 mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> Cannot modify records before the current quarter
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Operation -->
+                <div class="endpoint-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="method-badge method-delete me-3">DELETE</span>
+                            <code class="fs-6">/api/observations/{id}</code>
+                        </div>
+                        <p class="text-muted mb-0">Delete an observation (current quarter only)</p>
+                    </div>
+                </div>
+
+                <!-- Bulk Operations -->
+                <div class="endpoint-card">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="method-badge method-post me-3">POST</span>
+                            <code class="fs-6">/api/observations/bulk</code>
+                        </div>
+                        <p class="text-muted mb-0">Create multiple observations in a single request</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Code Examples Section -->
+            <section id="examples" class="mb-5">
+                <h2 class="section-title">
+                    <i class="fas fa-terminal me-2"></i>
+                    Code Examples
+                </h2>
+
+                <!-- Python Example -->
+                <div class="endpoint-card">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fab fa-python text-primary me-2"></i>
+                            Python (requests)
+                        </h5>
+                        <div class="code-snippet">
+                            <span class="lang-badge">python</span>
+                            <pre>import requests
+
+TOKEN = "your_jwt_token_here"
+BASE_URL = "{{ api_base_url }}"
+
+headers = {
+    "Authorization": f"Bearer {TOKEN}",
+    "Content-Type": "application/json"
+}
+
+# List observations
+response = requests.get(f"{BASE_URL}/api/observations", headers=headers)
+print(response.json())
+
+# Create observation
+data = {
+    "timestamp": "2025-12-06T12:00:00Z",
+    "timezone": "UTC",
+    "latitude": 51.5074,
+    "longitude": -0.1278,
+    "satellite_id": "SAT-001"
+}
+response = requests.post(
+    f"{BASE_URL}/api/observations",
+    headers=headers,
+    json=data
+)
+print(response.json())</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- JavaScript Example -->
+                <div class="endpoint-card">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fab fa-js text-warning me-2"></i>
+                            JavaScript (fetch)
+                        </h5>
+                        <div class="code-snippet">
+                            <span class="lang-badge">javascript</span>
+                            <pre>const TOKEN = 'your_jwt_token_here';
+const BASE_URL = '{{ api_base_url }}';
+
+// List observations
+fetch(`${BASE_URL}/api/observations`, {
+    headers: {
+        'Authorization': `Bearer ${TOKEN}`
+    }
+})
+.then(res => res.json())
+.then(data => console.log(data));
+
+// Create observation
+fetch(`${BASE_URL}/api/observations`, {
+    method: 'POST',
+    headers: {
+        'Authorization': `Bearer ${TOKEN}`,
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        timestamp: '2025-12-06T12:00:00Z',
+        timezone: 'UTC',
+        latitude: 51.5074,
+        longitude: -0.1278,
+        satellite_id: 'SAT-001'
+    })
+})
+.then(res => res.json())
+.then(data => console.log(data));</pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Interactive Docs CTA -->
+            <div class="interactive-cta mb-5">
+                <i class="fas fa-rocket mb-3" style="font-size: 3rem;"></i>
+                <h3 class="fw-bold mb-3">Try it in the Interactive Docs</h3>
+                <p class="lead mb-4">Explore and test all endpoints with our Swagger UI interface</p>
+                <a href="{{ swagger_url }}" target="_blank" class="btn btn-light btn-lg px-5">
+                    <i class="fas fa-external-link-alt me-2"></i>
+                    Open Swagger UI
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,27 +3,203 @@
 {% block title %}Subscriptions - TerraScope{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2 class="fw-bold mb-4">Your Subscriptions</h2>
-    
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card card-soft">
-                <div class="card-body text-center py-5">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-inbox text-muted mb-3" viewBox="0 0 16 16">
-                        <path d="M4.98 4a.5.5 0 0 0-.39.188L1.54 8H6a.5.5 0 0 1 .5.5 1.5 1.5 0 1 0 3 0A.5.5 0 0 1 10 8h4.46l-3.05-3.812A.5.5 0 0 0 11.02 4H4.98zm9.954 5H10.45a2.5 2.5 0 0 1-4.9 0H1.066l.32 2.562a.5.5 0 0 0 .497.438h12.234a.5.5 0 0 0 .496-.438L14.933 9zM3.809 3.563A1.5 1.5 0 0 1 4.981 3h6.038a1.5 1.5 0 0 1 1.172.563l3.7 4.625a.5.5 0 0 1 .105.374l-.39 3.124A1.5 1.5 0 0 1 14.117 13H1.883a1.5 1.5 0 0 1-1.489-1.314l-.39-3.124a.5.5 0 0 1 .106-.374l3.7-4.625z"/>
-                    </svg>
-                    <h5 class="text-muted">No active subscriptions</h5>
-                    <p class="text-muted">Browse our products to get started.</p>
-                    <a href="{% url 'products' %}" class="btn btn-primary mt-2">Browse Products</a>
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold mb-1">My Subscriptions</h2>
+            <p class="text-muted">Manage your recurring services and subscriptions</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-4">
+            <div class="card card-soft border-0">
+                <div class="card-body text-center p-4">
+                    <h3 class="fw-bold text-primary mb-1">{{ subscriptions|length }}</h3>
+                    <p class="text-muted mb-0 small">Total Subscriptions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-soft border-0">
+                <div class="card-body text-center p-4">
+                    <h3 class="fw-bold text-success mb-1">{{ active_count }}</h3>
+                    <p class="text-muted mb-0 small">Active</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-soft border-0">
+                <div class="card-body text-center p-4">
+                    <h3 class="fw-bold text-primary mb-1">${{ total_monthly_cost }}</h3>
+                    <p class="text-muted mb-0 small">Monthly Cost</p>
                 </div>
             </div>
         </div>
     </div>
+
+    {% if subscriptions %}
+    <!-- Subscriptions List -->
+    <div class="row">
+        <div class="col-12">
+            {% for subscription in subscriptions %}
+            <div class="card card-soft border-0 mb-3">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <!-- Subscription Info -->
+                        <div class="col-lg-8">
+                            <div class="d-flex align-items-start">
+                                <!-- Icon -->
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
+                                    <i class="fas fa-sync-alt text-primary fs-4"></i>
+                                </div>
+                                
+                                <!-- Details -->
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h5 class="fw-bold mb-0 me-3">{{ subscription.product.name }}</h5>
+                                        {% if subscription.status == 'active' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>Active
+                                            </span>
+                                        {% elif subscription.status == 'canceled' %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times-circle me-1"></i>Canceled
+                                            </span>
+                                        {% elif subscription.status == 'past_due' %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-exclamation-circle me-1"></i>Past Due
+                                            </span>
+                                        {% elif subscription.status == 'expired' %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-clock me-1"></i>Expired
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <p class="text-muted mb-2 small">
+                                        {{ subscription.product.description|truncatewords:15 }}
+                                    </p>
+                                    
+                                    <div class="text-muted small">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        {% if subscription.status == 'active' %}
+                                            Next billing: {{ subscription.current_period_end|date:"F d, Y" }}
+                                        {% elif subscription.canceled_at %}
+                                            Canceled on {{ subscription.canceled_at|date:"F d, Y" }}
+                                        {% else %}
+                                            Started {{ subscription.created_at|date:"F d, Y" }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Price and Actions -->
+                        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                            <h4 class="fw-bold text-primary mb-1">${{ subscription.price }}</h4>
+                            <small class="text-muted d-block mb-3">per {{ subscription.billing_cycle }}</small>
+                            
+                            <div class="d-flex flex-column gap-2">
+                                {% if subscription.status == 'active' %}
+                                    <button class="btn btn-sm btn-outline-danger" onclick="confirmCancel({{ subscription.id }})">
+                                        <i class="fas fa-times me-1"></i>Cancel Subscription
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary" disabled>
+                                        <i class="fas fa-edit me-1"></i>Manage
+                                    </button>
+                                {% elif subscription.status == 'canceled' %}
+                                    <button class="btn btn-sm btn-primary" disabled>
+                                        <i class="fas fa-redo me-1"></i>Reactivate
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-soft border-0">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-sync-alt text-muted mb-4" style="font-size: 4rem; opacity: 0.3;"></i>
+                    <h4 class="fw-bold mb-3">No Active Subscriptions</h4>
+                    <p class="text-muted mb-4">You don't have any subscriptions yet. Browse our products to find recurring services.</p>
+                    <a href="{% url 'products' %}" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart me-2"></i>Browse Products
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Info Cards -->
+    <div class="row mt-4 g-3">
+        <div class="col-md-4">
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-calendar-check text-primary fs-3 mb-3"></i>
+                    <h6 class="fw-semibold mb-2">Flexible Plans</h6>
+                    <small class="text-muted">Choose monthly or annual billing</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-credit-card text-success fs-3 mb-3"></i>
+                    <h6 class="fw-semibold mb-2">Easy Management</h6>
+                    <small class="text-muted">Cancel or upgrade anytime</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-bell text-warning fs-3 mb-3"></i>
+                    <h6 class="fw-semibold mb-2">Renewal Alerts</h6>
+                    <small class="text-muted">Never miss a payment</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="text-center mt-4">
+        <a href="{% url 'dashboards' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
 </div>
+
+<script>
+function confirmCancel(subscriptionId) {
+    if (confirm('Are you sure you want to cancel this subscription? You will still have access until the end of your billing period.')) {
+        // TODO: Implement cancel subscription functionality
+        alert('Subscription cancellation will be implemented with Stripe integration');
+    }
+}
+</script>
+
+<style>
+    .card-soft {
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .card-soft:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+</style>
 {% endblock %}
-{% extends "shop/base.html" %}
-
-{% block title %}Home - TerraScope{% endblock %}
-
-{% block content %}
