@@ -105,6 +105,7 @@
     .btn-generate:disabled {
         background: #9ca3af;
         box-shadow: none;
+        cursor: not-allowed;
     }
 </style>
 {% endblock %}
@@ -218,11 +219,11 @@
                                     {% endif %}
                                 </div>
                                 <div class="flex-grow-1">
-                                    <h6 class="fw-bold mb-1">Active Subscription</h6>
+                                    <h6 class="fw-bold mb-1">Active Purchase Required</h6>
                                     {% if has_active_subscription %}
                                         <small class="text-success">✓ You have API access</small>
                                     {% else %}
-                                        <small class="text-danger">✗ No active subscription</small>
+                                        <small class="text-danger">✗ No product purchased yet</small>
                                         <a href="{% url 'products' %}" class="btn btn-sm btn-outline-danger ms-2">
                                             Purchase Now
                                         </a>
@@ -254,21 +255,25 @@
 
             <!-- Generate Form -->
             <div class="glass-card p-5 mb-4">
-                <form method="post">
+                <form method="post" id="tokenForm" action="{% url 'generate_api_token' %}">
                     {% csrf_token %}
                     
                     <div class="text-center">
                         <h4 class="fw-bold mb-4">Ready to Generate Your Token?</h4>
                         
                         <button type="submit" class="btn btn-primary btn-generate" 
-                                {% if not user.is_email_verified %}disabled{% endif %}>
+                                {% if not user.is_email_verified or not has_active_subscription %}disabled{% endif %}>
                             <i class="fas fa-magic me-2"></i>
                             Generate API Token
                         </button>
                         
                         {% if not user.is_email_verified %}
                         <p class="text-muted mt-3 mb-0">
-                            <small>Please complete all requirements above to generate a token</small>
+                            <small>⚠️ Please verify your email to continue</small>
+                        </p>
+                        {% elif not has_active_subscription %}
+                        <p class="text-muted mt-3 mb-0">
+                            <small>⚠️ Please purchase a product to access API tokens</small>
                         </p>
                         {% endif %}
                     </div>
@@ -287,8 +292,8 @@
                         <div class="d-flex">
                             <div class="step-number me-3">1</div>
                             <div>
-                                <h6 class="fw-bold mb-2">Generate Token</h6>
-                                <small class="text-muted">Click the button above to create your unique JWT token</small>
+                                <h6 class="fw-bold mb-2">Purchase a Product</h6>
+                                <small class="text-muted">Buy any TerraScope plan to unlock API access</small>
                             </div>
                         </div>
                     </div>
@@ -297,8 +302,8 @@
                         <div class="d-flex">
                             <div class="step-number me-3">2</div>
                             <div>
-                                <h6 class="fw-bold mb-2">Copy & Save</h6>
-                                <small class="text-muted">Securely store your token - it won't be shown again</small>
+                                <h6 class="fw-bold mb-2">Generate Token</h6>
+                                <small class="text-muted">Click the button above to create your unique JWT token</small>
                             </div>
                         </div>
                     </div>
@@ -317,6 +322,12 @@
 
             <!-- Action Buttons -->
             <div class="d-flex gap-3 justify-content-center flex-wrap">
+                {% if not has_active_subscription %}
+                <a href="{% url 'products' %}" class="btn btn-success btn-lg px-5" style="border-radius: 50px;">
+                    <i class="fas fa-shopping-cart me-2"></i>
+                    Purchase a Product
+                </a>
+                {% endif %}
                 <a href="{% url 'api_documentation' %}" class="btn btn-outline-primary btn-lg px-5" style="border-radius: 50px;">
                     <i class="fas fa-book me-2"></i>
                     API Documentation
@@ -330,4 +341,79 @@
         </div>
     </div>
 </div>
+
+<!-- Toast for showing token -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="tokenToast" class="toast align-items-center text-white bg-success border-0" role="alert" style="min-width: 500px;">
+        <div class="d-flex">
+            <div class="toast-body">
+                <strong>Token Generated Successfully!</strong>
+                <div class="mt-2">
+                    <textarea id="generatedToken" class="form-control" rows="4" readonly></textarea>
+                </div>
+                <button class="btn btn-sm btn-light mt-2" onclick="copyTokenFromToast()">
+                    <i class="fas fa-copy me-1"></i>Copy Token
+                </button>
+                <small class="d-block mt-2">⚠️ Save this token now - it won't be shown again!</small>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form submission handler
+document.getElementById('tokenForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalHTML = btn.innerHTML;
+    
+    // Show loading state
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating...';
+    
+    try {
+        const formData = new FormData(e.target);
+        
+        const response = await fetch('{% url "generate_api_token" %}', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.token) {
+            // Show token in toast
+            document.getElementById('generatedToken').value = data.token;
+            const toast = new bootstrap.Toast(document.getElementById('tokenToast'));
+            toast.show();
+                
+        } else {
+            alert(data.error || 'Failed to generate token');
+            
+            // If user needs to purchase, redirect them
+            if (data.redirect_url) {
+                if (confirm('Would you like to view available products now?')) {
+                    window.location.href = data.redirect_url;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Network error: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+});
+
+function copyTokenFromToast() {
+    const textarea = document.getElementById('generatedToken');
+    textarea.select();
+    document.execCommand('copy');
+    alert('Token copied to clipboard!');
+}
+</script>
 {% endblock %}

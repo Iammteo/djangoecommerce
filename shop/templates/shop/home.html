@@ -33,7 +33,7 @@
                     
                     <!-- CTA Buttons -->
                     <div class="d-flex flex-wrap gap-3">
-                        <a href="{% url 'products' %}" class="btn btn-light btn-lg px-4 py-3 shadow-lg">
+                        <a href="{% url 'signin' %}" class="btn btn-light btn-lg px-4 py-3 shadow-lg">
                             <i class="fas fa-rocket me-2"></i>Explore Products
                         </a>
                         {% if user.is_authenticated %}
@@ -207,7 +207,7 @@
     </div>
     
     <div class="text-center mt-4">
-        <a href="{% url 'products' %}" class="btn btn-outline-primary btn-lg">
+        <a href="{% url 'signin' %}" class="btn btn-outline-primary btn-lg">
             View All Products <i class="fas fa-arrow-right ms-2"></i>
         </a>
     </div>

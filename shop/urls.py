@@ -30,11 +30,18 @@ urlpatterns = [
     path('subscriptions/', views.subscriptions_page, name='subscriptions'),
     path('orders/', views.orders_page, name='orders'),
 
-    # API endpoints
-    path('api/generate-token', views.generate_api_token, name='generate_api_token'),
-    path ('api/documentation', views.api_documentation, name='api_documentation'),
-    path('api/token/', views.api_token_page, name='api_token'),
-
+    # # API endpoints
+    # path('api/generate-token', views.generate_api_token, name='generate_api_token'),
+    # path ('api/documentation', views.api_documentation, name='api_documentation'),
+    # path('api/token/', views.api_token_page, name='api_token'),
+    
+    path('api/token/', views.generate_token_page, name='generate_token_page'),
+    
+    # This is the API endpoint that GENERATES the token (POST)
+    path('api/token/generate/', views.generate_api_token, name='generate_api_token'),
+    
+    # API documentation
+    path('api/documentation/', views.api_documentation, name='api_documentation'),
     
 
     # Payment URLs
