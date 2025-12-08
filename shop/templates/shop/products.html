@@ -279,7 +279,7 @@
                     {% endif %}
                     
                     <span class="category-badge">
-                        {{ product.category|default:"Analytics" }}
+                        {{ product.category|default:"Subscriptions" }}
                     </span>
                     
                     <div class="product-icon">
@@ -297,7 +297,7 @@
                     <h3 class="h4 mb-3 fw-bold">{{ product.name }}</h3>
                     
                     <div>
-                        <p class="price-tag">${{ product.price }}/month</p>
+                        <p class="price-tag">£{{ product.price }}</p>
                         <p class="price-period">/month</p>
                     </div>
                 </div>
@@ -341,7 +341,7 @@
                     
                     {% if user.is_authenticated %}
                         <a href="{% url 'checkout' product.id %}" class="btn btn-purchase">
-                            <i class="fas fa-shopping-cart me-2"></i>Purchase Now
+                            <i class="fas fa-shopping-cart me-2"></i>Get it now
                         </a>
                     {% else %}
                         <a href="{% url 'signin' %}" class="btn btn-purchase">

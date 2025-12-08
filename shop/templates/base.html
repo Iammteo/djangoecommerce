@@ -91,7 +91,7 @@
         }
         .nav-link.active {
             font-weight: 600;
-            color: #4f46e5 !important;
+            color: #ffffff !important;
         }
         .messages-container {
             position: fixed;
@@ -121,9 +121,11 @@
 
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav me-auto align-items-lg-center">
+                {% if not user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">Home</a>
                 </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link {% if '/products/' in request.path %}active{% endif %}" href="{% url 'products' %}">Products</a>
                 </li>

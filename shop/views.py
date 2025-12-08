@@ -367,7 +367,7 @@ def checkout(request, product_id):
                 payment_method_types=['card'],
                 line_items=[{
                     'price_data': {
-                        'currency': 'usd',
+                        'currency': 'Gbp',
                         'unit_amount': int(product.price * 100),  # Convert to cents
                         'product_data': {
                             'name': product.name,
@@ -432,7 +432,7 @@ def success(request):
                 total_price=product.price
             )
             print(f"✅ ORDER CREATED: #{order.id}")
-            print(f"Order details: User={order.user.email}, Product={order.product.name}, Price=${order.total_price}")
+            print(f"Order details: User={order.user.email}, Product={order.product.name}, Price=£{order.total_price}")
             
             messages.success(request, f"Payment successful! Order #{order.id} created.")
                 
