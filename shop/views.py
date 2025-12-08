@@ -456,11 +456,6 @@ def payment_cancel(request):
     messages.warning(request, "Payment was cancelled.")
     return render(request, 'shop/payment_cancel.html')
 
-# def success(request):
-#     order = Order.objects.get(id=request.GET.get('order_id'))
-#     order.status = 'paid'
-#     order.save()
-#     return render(request, "shop/success.html")
 
 @login_required(login_url="signin")
 def orders_page(request):
@@ -479,57 +474,52 @@ def orders_page(request):
     return render(request, "shop/orders.html", context)
 
 
+# shop/views.py - ADD THESE TWO FUNCTIONS
 
-
+# This function DISPLAYS the token generation page (GET request)
 @login_required(login_url="signin")
-def api_management(request):
-    """Main API management dashboard"""
-    from .models import APIToken, APIUsageLog
+def generate_token_page(request):
+    """Display the token generation page with subscription check"""
     
-    # Get user's tokens
-    tokens = APIToken.objects.filter(user=request.user)
-    active_tokens = tokens.filter(is_active=True, expires_at__gt=timezone.now())
-    
-    # Get API usage statistics
-    usage_logs = APIUsageLog.objects.filter(user=request.user)
-    
-    # Calculate statistics
-    total_calls = usage_logs.count()
-    successful_calls = usage_logs.filter(status_code__lt=400).count()
-    failed_calls = usage_logs.filter(status_code__gte=400).count()
-    
-    # Get recent activity
-    recent_usage = usage_logs[:10]
+    # Check if user has any paid orders
+    has_active_subscription = Order.objects.filter(
+        user=request.user,
+        status='paid'
+    ).exists()
     
     context = {
-        'tokens': tokens,
-        'active_tokens': active_tokens,
-        'total_calls': total_calls,
-        'successful_calls': successful_calls,
-        'failed_calls': failed_calls,
-        'recent_usage': recent_usage,
+        'has_active_subscription': has_active_subscription,
     }
     
-    return render(request, 'shop/api_management.html', context)
+    return render(request, "shop/generate_token.html", context)
 
 
+# This function GENERATES the token (POST request only)
 @login_required(login_url="signin")
 @require_http_methods(["POST"])
 def generate_api_token(request):
-    """Generate a new JWT token and save it to database"""
-    from .models import APIToken
+    """Generate a new JWT token - requires paid order"""
+    from .models import ActivityLog
     
     try:
-        # Check if user has subscription/order
-        has_subscription = Order.objects.filter(
+        # CRITICAL: Check if user has a PAID order
+        has_paid_order = Order.objects.filter(
             user=request.user,
             status='paid'
         ).exists()
         
-        if not has_subscription:
+        if not has_paid_order:
             return JsonResponse({
                 'success': False,
-                'error': 'Please purchase a product to access the API'
+                'error': 'You must purchase a product before generating an API token. Visit the Products page to get started.',
+                'redirect_url': '/products/'
+            }, status=403)
+        
+        # Check email verification
+        if not request.user.is_email_verified:
+            return JsonResponse({
+                'success': False,
+                'error': 'Please verify your email before generating API tokens.'
             }, status=403)
         
         # Get token name from request
@@ -553,15 +543,6 @@ def generate_api_token(request):
         
         token = jwt.encode(payload, jwt_secret, algorithm="HS256")
         
-        # Save token to database
-        api_token = APIToken.objects.create(
-            user=request.user,
-            token=token,
-            name=token_name,
-            expires_at=expires_at,
-            is_active=True
-        )
-        
         # Log activity
         ActivityLog.objects.create(
             user=request.user,
@@ -572,7 +553,6 @@ def generate_api_token(request):
         return JsonResponse({
             'success': True,
             'token': token,
-            'token_id': api_token.id,
             'expires_at': expires_at.isoformat(),
             'expires_in': '24 hours'
         })
@@ -584,68 +564,12 @@ def generate_api_token(request):
         }, status=500)
 
 
-@login_required(login_url="signin")
-@require_http_methods(["POST"])
-def revoke_api_token(request, token_id):
-    """Revoke/deactivate a specific token"""
-    from .models import APIToken
-    
-    try:
-        token = APIToken.objects.get(id=token_id, user=request.user)
-        token.is_active = False
-        token.save()
-        
-        # Log activity
-        ActivityLog.objects.create(
-            user=request.user,
-            activity_type='profile_updated',
-            description=f'Revoked API token: {token.name}'
-        )
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Token revoked successfully'
-        })
-        
-    except APIToken.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'error': 'Token not found'
-        }, status=404)
-
-
-@login_required(login_url="signin")
-@require_http_methods(["POST"])
-def delete_api_token(request, token_id):
-    """Permanently delete a token"""
-    from .models import APIToken
-    
-    try:
-        token = APIToken.objects.get(id=token_id, user=request.user)
-        token_name = token.name
-        token.delete()
-        
-        # Log activity
-        ActivityLog.objects.create(
-            user=request.user,
-            activity_type='profile_updated',
-            description=f'Deleted API token: {token_name}'
-        )
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Token deleted successfully'
-        })
-        
-    except APIToken.DoesNotExist:
-        return JsonResponse({
-            'success': False,
-            'error': 'Token not found'
-        }, status=404)
 
 
 
-# # Add this to shop/views.py after the existing imports
+
+
+
 # @login_required(login_url="signin")
 # def generate_api_token(request):
 #     """Generate a JWT token for the authenticated user"""
@@ -686,10 +610,10 @@ def delete_api_token(request, token_id):
 #     return render(request, 'shop/api_token.html')
 
 
-@login_required(login_url="signin")
-def api_token_page(request):
-    """Display the API token generation page"""
-    return render(request, "shop/api_token.html")
+# @login_required(login_url="signin")
+# def api_token_page(request):
+#     """Display the API token generation page"""
+#     return render(request, "shop/api_token.html")
 
 
 
